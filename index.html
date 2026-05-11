@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Span Labeler — Bot Conversations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f3ec;
+    --paper: #fdfbf5;
+    --ink: #1c1c1a;
+    --ink-2: #4a4a46;
+    --ink-3: #8a8a82;
+    --rule: #d9d4c4;
+    --rule-2: #ebe5d3;
+    --accent: #b13c2a;
+    --accent-soft: #f1d6cd;
+    --bot: #2b4a6f;
+    --bot-soft: #dce6f1;
+    --user: #4a6b3a;
+    --user-soft: #dfe7d4;
+    --warn: #c08a2a;
+    --selected: #fff3a8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    font-size: 14px;
+    overflow: hidden;
+  }
+  .app {
+    display: none;
+    grid-template-columns: 240px 1fr 340px;
+    grid-template-rows: 56px 1fr 36px;
+    grid-template-areas:
+      "header header header"
+      "queue main sidebar"
+      "footer footer footer";
+    height: 100vh;
+  }
+  /* Header */
+  header {
+    grid-area: header;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 24px;
+  }
+  .brand {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    font-style: italic;
+  }
+  .brand::before {
+    content: "§";
+    color: var(--accent);
+    margin-right: 8px;
+    font-style: normal;
+    font-weight: 400;
+  }
+  .header-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .user-picker {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px 5px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s ease;
+  }
+  .user-picker:hover { border-color: var(--ink-3); }
+  .user-picker .user-label {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+  }
+  .user-picker .user-id {
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .user-picker .chevron {
+    color: var(--ink-3);
+    font-size: 10px;
+    margin-left: 2px;
+  }
+  .user-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    min-width: 220px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    display: none;
+    z-index: 50;
+    overflow: hidden;
+  }
+  .user-menu.visible { display: block; }
+  .user-menu-item {
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--rule-2);
+  }
+  .user-menu-item:last-child { border-bottom: none; }
+  .user-menu-item:hover { background: var(--bg); }
+  .user-menu-item.current {
+    background: var(--bg);
+  }
+  .user-menu-item.current .user-menu-id { color: var(--accent); font-weight: 600; }
+  .user-menu-item .check {
+    color: var(--accent);
+    font-size: 11px;
+    width: 12px;
+  }
+  .user-menu-item .remove-user {
+    margin-left: auto;
+    color: var(--ink-3);
+    font-size: 14px;
+    padding: 0 4px;
+    border-radius: 2px;
+  }
+  .user-menu-item .remove-user:hover { color: var(--accent); background: var(--accent-soft); }
+  .user-menu-divider {
+    border-top: 1px solid var(--rule);
+    padding: 8px 12px;
+    background: var(--bg);
+    display: flex;
+    gap: 6px;
+  }
+  .user-menu-divider input {
+    flex: 1;
+    border: 1px solid var(--rule);
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--paper);
+    border-radius: 2px;
+    outline: none;
+  }
+  .user-menu-divider input:focus { border-color: var(--ink); }
+  .user-menu-divider button {
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    border-radius: 2px;
+  }
+  .user-menu-hint {
+    padding: 6px 12px 8px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 10px;
+    color: var(--ink-3);
+    background: var(--bg);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .annotator-chip {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-3);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+  }
+  .btn {
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 7px 12px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s ease;
+    letter-spacing: 0.01em;
+  }
+  .btn:hover { background: var(--bg); border-color: var(--ink-3); }
+  .btn.primary {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .btn.primary:hover { background: var(--ink-2); }
+  .btn.danger { color: var(--accent); }
+  .btn.danger:hover { background: var(--accent-soft); border-color: var(--accent); }
+
+  /* Queue (left) */
+  .queue {
+    grid-area: queue;
+    background: var(--paper);
+    border-right: 1px solid var(--rule);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .queue-head {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--rule-2);
+    position: sticky; top: 0;
+    background: var(--paper);
+    z-index: 2;
+  }
+  .queue-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-3);
+    margin-bottom: 8px;
+  }
+  .queue-stats {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+  }
+  .queue-stats .done { color: var(--accent); }
+  .queue-stats .sep { color: var(--rule); margin: 0 4px; }
+  .queue-list { flex: 1; }
+  .queue-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--rule-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.1s ease;
+  }
+  .queue-item:hover { background: var(--bg); }
+  .queue-item.active {
+    background: var(--bg);
+    border-left: 3px solid var(--accent);
+    padding-left: 13px;
+  }
+  .queue-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    min-width: 28px;
+  }
+  .queue-id {
+    font-size: 13px;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .queue-badge {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--rule);
+    flex-shrink: 0;
+  }
+  .queue-badge.has-labels { background: var(--accent); }
+  .queue-badge.done { background: var(--user); }
+
+  /* Main (center) */
+  main {
+    grid-area: main;
+    overflow-y: auto;
+    padding: 32px 40px 80px;
+    position: relative;
+  }
+  .conv-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .conv-id-block { flex: 1; min-width: 0; }
+  .conv-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-3);
+    margin-bottom: 4px;
+  }
+  .conv-id {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .nav-controls { display: flex; gap: 6px; }
+  .nav-btn {
+    width: 32px; height: 32px;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    color: var(--ink-2);
+  }
+  .nav-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .turns { display: flex; flex-direction: column; gap: 14px; }
+  .turn {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .turn-meta {
+    text-align: right;
+    padding-top: 12px;
+  }
+  .turn-role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+  .turn-role.bot { color: var(--bot); }
+  .turn-role.user { color: var(--user); }
+  .turn-idx {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    margin-top: 2px;
+  }
+  .turn-bubble {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 14px 18px;
+    font-size: 15px;
+    line-height: 1.6;
+    user-select: text;
+    position: relative;
+  }
+  .turn-bubble.bot { border-left: 3px solid var(--bot); }
+  .turn-bubble.user { border-left: 3px solid var(--user); }
+
+  .turn-text {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 15.5px;
+    line-height: 1.65;
+  }
+  .turn-text mark {
+    padding: 1px 2px;
+    border-radius: 2px;
+    background: transparent;
+    border-bottom: 2px solid;
+    cursor: pointer;
+    position: relative;
+    transition: filter 0.1s ease;
+  }
+  .turn-text mark:hover { filter: brightness(0.95); }
+  .turn-text mark .span-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1px 4px;
+    border-radius: 2px;
+    margin-left: 3px;
+    vertical-align: middle;
+    color: white;
+    position: relative;
+    top: -1px;
+  }
+
+  /* Sidebar (right) */
+  aside {
+    grid-area: sidebar;
+    background: var(--paper);
+    border-left: 1px solid var(--rule);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--rule);
+    position: sticky; top: 0;
+    background: var(--paper);
+    z-index: 2;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    background: var(--paper);
+    border: none;
+    border-bottom: 2px solid transparent;
+  }
+  .tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .tab-content { padding: 16px; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  .category {
+    margin-bottom: 20px;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    background: var(--bg);
+  }
+  .category-head {
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--rule-2);
+    background: var(--paper);
+  }
+  .category-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 14px;
+    flex: 1;
+  }
+  .category-body { padding: 8px; }
+  .label-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    margin: 3px 3px;
+    border: 1px solid;
+    border-radius: 2px;
+    background: var(--paper);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.1s ease;
+  }
+  .label-btn:hover { transform: translateY(-1px); }
+  .label-btn .swatch {
+    width: 8px; height: 8px;
+    border-radius: 1px;
+  }
+  .label-btn .remove {
+    color: var(--ink-3);
+    margin-left: 3px;
+    padding: 0 2px;
+    font-size: 14px;
+    line-height: 1;
+  }
+  .label-btn .remove:hover { color: var(--accent); }
+  .add-label-row {
+    display: flex;
+    gap: 4px;
+    margin: 4px 3px 0;
+    padding-top: 6px;
+    border-top: 1px dashed var(--rule);
+  }
+  .add-label-row input[type="text"] {
+    flex: 1;
+    border: 1px solid var(--rule);
+    padding: 4px 6px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
+    background: var(--paper);
+    border-radius: 2px;
+  }
+  .add-label-row input[type="color"] {
+    width: 26px; height: 26px;
+    padding: 0;
+    border: 1px solid var(--rule);
+    cursor: pointer;
+    background: none;
+    border-radius: 2px;
+  }
+  .add-label-row button {
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0 8px;
+    cursor: pointer;
+    font-size: 11px;
+    border-radius: 2px;
+  }
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+    color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  .icon-btn:hover { color: var(--accent); }
+
+  /* Spans list */
+  .span-item {
+    padding: 8px 10px;
+    border: 1px solid var(--rule);
+    background: var(--bg);
+    margin-bottom: 6px;
+    border-radius: 2px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+  }
+  .span-item .swatch {
+    width: 10px; height: 10px;
+    margin-top: 3px;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+  .span-content { flex: 1; min-width: 0; }
+  .span-cat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+  }
+  .span-label-name {
+    font-weight: 600;
+    margin-top: 1px;
+  }
+  .span-text {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-2);
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .span-loc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-3);
+    margin-top: 4px;
+  }
+
+  /* Footer */
+  footer {
+    grid-area: footer;
+    background: var(--paper);
+    border-top: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+  }
+  footer kbd {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    padding: 1px 5px;
+    border-radius: 2px;
+    color: var(--ink-2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: none;
+  }
+
+
+  /* === LAUNCHER === */
+  .launcher {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--bg);
+  }
+  .launcher.visible { display: flex; }
+  .launcher-header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    padding: 32px 48px 28px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .launcher-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 44px;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .launcher-title::before {
+    content: "§";
+    color: var(--accent);
+    margin-right: 12px;
+    font-style: normal;
+    font-weight: 400;
+  }
+  .launcher-subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 8px;
+  }
+  .launcher-actions { display: flex; gap: 8px; }
+  .launcher-body {
+    padding: 40px 48px 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .launcher-section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-3);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .launcher-section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  .dataset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+  }
+  .dataset-card {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(.2,.7,.2,1);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: visible;
+  }
+  .dataset-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.22s ease;
+    border-radius: 4px 4px 0 0;
+  }
+  .dataset-card:hover {
+    border-color: var(--ink);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.07);
+  }
+  .dataset-card:hover::before { transform: scaleX(1); }
+  .dataset-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    position: relative;
+  }
+  .dataset-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    flex: 1;
+  }
+  .dataset-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 2px;
+  }
+  .dataset-menu-btn {
+    background: none;
+    border: 1px solid transparent;
+    color: var(--ink-3);
+    font-size: 18px;
+    line-height: 1;
+    padding: 2px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .dataset-menu-btn:hover { border-color: var(--rule); color: var(--ink); }
+  .dataset-desc {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    min-height: 2.6em;
+  }
+  .dataset-stats {
+    display: flex;
+    gap: 18px;
+    padding-top: 12px;
+    border-top: 1px solid var(--rule-2);
+  }
+  .dataset-stat .stat-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: -0.02em;
+  }
+  .dataset-stat .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+  }
+  .dataset-progress {
+    height: 4px;
+    background: var(--rule-2);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+  }
+  .dataset-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.3s ease;
+  }
+  .dataset-card.new {
+    border-style: dashed;
+    background: transparent;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--ink-3);
+    min-height: 220px;
+    transition: all 0.15s ease;
+  }
+  .dataset-card.new:hover { color: var(--ink); border-color: var(--ink); background: var(--paper); }
+  .dataset-card.new::before { display: none; }
+  .dataset-card.new .plus-icon {
+    font-size: 32px;
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    margin-bottom: 8px;
+  }
+  .dataset-card.new .new-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .back-to-launcher {
+    background: none;
+    border: 1px solid var(--rule);
+    color: var(--ink-2);
+    padding: 5px 10px 5px 8px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: all 0.15s ease;
+  }
+  .back-to-launcher:hover { border-color: var(--ink); color: var(--ink); }
+  .back-to-launcher .arrow { font-size: 14px; }
+  .dataset-context {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--ink-2);
+    margin-left: 6px;
+  }
+  .dataset-context::before {
+    content: '/ ';
+    color: var(--ink-3);
+    font-style: normal;
+    margin-right: 4px;
+  }
+  .dataset-menu {
+    position: absolute;
+    top: 32px; right: 0;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    min-width: 160px;
+    display: none;
+    z-index: 10;
+  }
+  .dataset-menu.visible { display: block; }
+  .dataset-menu-item {
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--rule-2);
+    font-family: 'Inter Tight', sans-serif;
+  }
+  .dataset-menu-item:last-child { border: none; }
+  .dataset-menu-item:hover { background: var(--bg); }
+  .dataset-menu-item.danger:hover { background: var(--accent-soft); color: var(--accent); }
+
+  /* Selection popup */
+  .selection-popup {
+    position: fixed;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 6px;
+    border-radius: 3px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: none;
+    max-width: 320px;
+  }
+  .selection-popup.visible { display: block; }
+  .selection-popup-hint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+    padding: 4px 6px 2px;
+  }
+  .selection-popup .label-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 4px;
+    max-width: 280px;
+  }
+  .selection-popup .quick-label {
+    font-size: 11px;
+    padding: 3px 7px;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 2px;
+    font-weight: 500;
+    font-family: 'Inter Tight', sans-serif;
+  }
+  .selection-popup .cat-divider {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+    width: 100%;
+    padding: 4px 4px 2px;
+  }
+
+  /* Empty state */
+  .empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--ink-3);
+    text-align: center;
+    padding: 40px;
+  }
+  .empty-title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .empty-sub {
+    font-size: 14px;
+    margin-bottom: 24px;
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(28,28,26,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal {
+    background: var(--paper);
+    border-radius: 4px;
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .modal-head {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .modal-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .modal-foot {
+    padding: 14px 24px;
+    border-top: 1px solid var(--rule);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    background: var(--bg);
+  }
+  textarea {
+    width: 100%;
+    min-height: 240px;
+    border: 1px solid var(--rule);
+    padding: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    background: var(--paper);
+    border-radius: 2px;
+    resize: vertical;
+  }
+  .help-text {
+    font-size: 12px;
+    color: var(--ink-2);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .help-text code {
+    background: var(--bg);
+    padding: 1px 5px;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  ::selection { background: var(--selected); color: var(--ink); }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--rule);
+    border-radius: 5px;
+    border: 2px solid var(--paper);
+  }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
+</style>
+</head>
+<body>
+<!-- ============ LAUNCHER PAGE ============ -->
+<div class="launcher" id="launcher">
+  <div class="launcher-header">
+    <div>
+      <div class="launcher-title">Span Labeler</div>
+      <div class="launcher-subtitle">Multi-turn conversation annotation workspace</div>
+    </div>
+    <div class="launcher-actions">
+      <button class="btn" id="btn-launcher-import">Import Dataset</button>
+      <button class="btn primary" id="btn-launcher-new">New Dataset</button>
+    </div>
+  </div>
+  <div class="launcher-body">
+    <div class="launcher-section-label">Datasets</div>
+    <div class="dataset-grid" id="dataset-grid"></div>
+  </div>
+</div>
+
+<!-- ============ NEW DATASET MODAL ============ -->
+<div class="modal-overlay" id="modal-new-dataset">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">New Dataset</div>
+      <button class="icon-btn" id="modal-new-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="help-text">Create a new dataset workspace. Each dataset has its own conversations, label categories, annotators, and span annotations — fully separated.</div>
+      <label style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-3); margin-bottom:6px; font-family:'JetBrains Mono',monospace;">Name</label>
+      <input type="text" id="new-dataset-name" placeholder="e.g., Q2 Card Disputes" style="width:100%; border:1px solid var(--rule); padding:8px 10px; font-family:'Fraunces',serif; font-size:16px; background:var(--paper); border-radius:2px; margin-bottom:14px; outline:none;">
+      <label style="display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-3); margin-bottom:6px; font-family:'JetBrains Mono',monospace;">Description (optional)</label>
+      <input type="text" id="new-dataset-desc" placeholder="What's in this dataset?" style="width:100%; border:1px solid var(--rule); padding:8px 10px; font-family:'Inter Tight',sans-serif; font-size:13px; background:var(--paper); border-radius:2px; margin-bottom:14px; outline:none;">
+      <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer; padding:8px 10px; background:var(--bg); border-radius:2px;">
+        <input type="checkbox" id="new-dataset-samples" checked>
+        Include sample bank conversations to start
+      </label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="modal-new-cancel">Cancel</button>
+      <button class="btn primary" id="modal-new-create">Create</button>
+    </div>
+  </div>
+</div>
+
+<div class="app" id="labeler-app">
+  <header>
+    <button class="back-to-launcher" id="btn-back-launcher" title="Back to datasets">
+      <span class="arrow">‹</span> Datasets
+    </button>
+    <div class="brand">Span Labeler<span class="dataset-context" id="dataset-context"></span></div>
+    <div class="header-meta" id="header-meta" style="color: var(--accent); font-weight: 600;">private workspace</div>
+    <div class="header-actions">
+      <div class="user-picker" id="user-picker">
+        <span class="user-label">Annotator</span>
+        <span class="user-id" id="current-user-id">—</span>
+        <span class="chevron">▾</span>
+        <div class="user-menu" id="user-menu"></div>
+      </div>
+      <button class="btn" id="btn-import">Import</button>
+      <button class="btn" id="btn-export">Export</button>
+      <button class="btn primary" id="btn-categories">Manage Labels</button>
+    </div>
+  </header>
+
+  <nav class="queue">
+    <div class="queue-head">
+      <div class="queue-title">Queue</div>
+      <div class="queue-stats" id="queue-stats">
+        <span class="done">0</span><span class="sep">/</span><span id="queue-total">0</span>
+      </div>
+    </div>
+    <div class="queue-list" id="queue-list"></div>
+  </nav>
+
+  <main id="main">
+    <div class="empty" id="empty-state">
+      <div class="empty-title">No conversations loaded</div>
+      <div class="empty-sub">Import a JSON file or paste conversation data to begin. The tool comes preloaded with sample bank chatbot conversations.</div>
+      <button class="btn primary" id="btn-load-sample">Load samples</button>
+    </div>
+    <div id="conv-view" style="display:none;">
+      <div class="conv-header">
+        <div class="conv-id-block">
+          <div class="conv-label">Conversation</div>
+          <div class="conv-id" id="conv-id">—</div>
+        </div>
+        <div class="nav-controls">
+          <button class="nav-btn" id="btn-prev" title="Previous (←)">‹</button>
+          <button class="nav-btn" id="btn-next" title="Next (→)">›</button>
+        </div>
+      </div>
+      <div class="turns" id="turns"></div>
+    </div>
+  </main>
+
+  <aside>
+    <div class="sidebar-tabs">
+      <button class="tab active" data-tab="labels">Labels</button>
+      <button class="tab" data-tab="spans">Spans <span id="span-count"></span></button>
+    </div>
+    <div class="tab-content" style="flex:1; overflow-y:auto;">
+      <div class="tab-pane active" id="pane-labels">
+        <div id="categories-list"></div>
+      </div>
+      <div class="tab-pane" id="pane-spans">
+        <div id="spans-list"><div style="color:var(--ink-3); font-size:12px; padding:20px; text-align:center;">No spans labeled yet.</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <footer>
+    <div><kbd>←</kbd> <kbd>→</kbd> Navigate</div>
+    <div>Select text to label</div>
+    <div><kbd>Esc</kbd> Cancel</div>
+    <div style="margin-left:auto;" id="autosave-indicator">Auto-saved</div>
+  </footer>
+</div>
+
+<!-- Selection popup -->
+<div class="selection-popup" id="popup">
+  <div class="selection-popup-hint">Apply label</div>
+  <div class="label-grid" id="popup-labels"></div>
+</div>
+
+<!-- Manage categories modal -->
+<div class="modal-overlay" id="modal-cats">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Label Categories</div>
+      <button class="icon-btn" id="modal-cats-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="help-text">Define the categories and labels you'll use to annotate spans. Each label has a color used for the highlight underline and tag.</div>
+      <div id="modal-cats-list"></div>
+      <div style="margin-top:14px; padding-top:14px; border-top: 1px dashed var(--rule);">
+        <div style="display:flex; gap:6px;">
+          <input type="text" id="new-cat-name" placeholder="New category name (e.g., Sentiment)" style="flex:1; border:1px solid var(--rule); padding:6px 10px; font-family:'Inter Tight',sans-serif; font-size:13px; background:var(--paper); border-radius:2px;">
+          <button class="btn primary" id="btn-add-cat">Add Category</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="modal-cats-done">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import modal -->
+<div class="modal-overlay" id="modal-import">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Import Conversations</div>
+      <button class="icon-btn" id="modal-import-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="help-text">Paste a JSON array of conversations. Each conversation needs an <code>id</code> and a <code>turns</code> array; each turn needs <code>role</code> (<code>bot</code> or <code>user</code>) and <code>text</code>. Existing annotations can optionally be included as <code>spans</code>.</div>
+      <textarea id="import-text" placeholder='[
+  {
+    "id": "conv-001",
+    "turns": [
+      {"role": "bot", "text": "Hello, how can I help you today?"},
+      {"role": "user", "text": "I want to check my balance."}
+    ]
+  }
+]'></textarea>
+      <div style="margin-top:10px; display:flex; gap:8px; align-items:center;">
+        <input type="file" id="file-input" accept=".json" style="font-size:12px;">
+        <span style="font-size:11px; color:var(--ink-3);">…or upload a .json file</span>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="modal-import-cancel">Cancel</button>
+      <button class="btn primary" id="modal-import-confirm">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Export modal -->
+<div class="modal-overlay" id="modal-export">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Export Annotations</div>
+      <button class="icon-btn" id="modal-export-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="help-text">Export conversations with span annotations.</div>
+      <div style="margin-bottom: 12px; display: flex; gap: 16px; padding: 10px 12px; background: var(--bg); border-radius: 3px; font-size: 13px;">
+        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+          <input type="radio" name="export-scope" value="mine" checked>
+          <span>Just my spans <span id="export-mine-id" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent);"></span></span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+          <input type="radio" name="export-scope" value="all">
+          <span>All annotators (full data)</span>
+        </label>
+      </div>
+      <textarea id="export-text" readonly></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="btn-copy-export">Copy</button>
+      <button class="btn primary" id="btn-download-export">Download .json</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============== STATE ==============
+const DEFAULT_CATEGORIES = [
+  {
+    id: 'intent',
+    name: 'Intent',
+    labels: [
+      {id: 'balance_inquiry', name: 'Balance Inquiry', color: '#2b4a6f'},
+      {id: 'transfer', name: 'Transfer', color: '#5b8def'},
+      {id: 'card_issue', name: 'Card Issue', color: '#b13c2a'},
+      {id: 'fraud_report', name: 'Fraud Report', color: '#8a1c1c'},
+      {id: 'loan_inquiry', name: 'Loan Inquiry', color: '#6b4a8e'},
+    ]
+  },
+  {
+    id: 'entity',
+    name: 'Entity',
+    labels: [
+      {id: 'amount', name: 'Amount', color: '#4a6b3a'},
+      {id: 'account', name: 'Account', color: '#8a6b2a'},
+      {id: 'date', name: 'Date', color: '#2a8a8a'},
+      {id: 'merchant', name: 'Merchant', color: '#c08a2a'},
+    ]
+  },
+  {
+    id: 'sentiment',
+    name: 'Sentiment',
+    labels: [
+      {id: 'frustrated', name: 'Frustrated', color: '#b13c2a'},
+      {id: 'satisfied', name: 'Satisfied', color: '#4a6b3a'},
+      {id: 'confused', name: 'Confused', color: '#c08a2a'},
+    ]
+  },
+  {
+    id: 'quality',
+    name: 'Bot Quality',
+    labels: [
+      {id: 'helpful', name: 'Helpful Response', color: '#4a6b3a'},
+      {id: 'incorrect', name: 'Incorrect', color: '#8a1c1c'},
+      {id: 'unclear', name: 'Unclear', color: '#c08a2a'},
+      {id: 'hallucination', name: 'Hallucination', color: '#6b1a8e'},
+    ]
+  }
+];
+
+const SAMPLE_CONVERSATIONS = [
+  {
+    id: 'conv-001',
+    turns: [
+      {role: 'bot', text: 'Hello! Welcome to Riverbank Online Assistant. How can I help you today?'},
+      {role: 'user', text: 'Hi, I need to check my checking account balance please.'},
+      {role: 'bot', text: 'Of course. I can help with that. For security, could you confirm the last four digits of your account number?'},
+      {role: 'user', text: 'Sure, it ends in 4827.'},
+      {role: 'bot', text: 'Thank you. Your checking account balance is $2,341.18 as of today, May 11, 2026. Is there anything else I can help with?'},
+      {role: 'user', text: 'No, that\'s all. Thanks!'},
+      {role: 'bot', text: 'You\'re welcome. Have a great day!'}
+    ]
+  },
+  {
+    id: 'conv-002',
+    turns: [
+      {role: 'bot', text: 'Hello! How may I assist you?'},
+      {role: 'user', text: 'My debit card was just declined at Target and I have plenty of money. This is the third time this month!'},
+      {role: 'bot', text: 'I\'m sorry to hear that. Let me look into this. Can you tell me the approximate transaction amount and time?'},
+      {role: 'user', text: 'About $87 at 2:15pm today.'},
+      {role: 'bot', text: 'I see the declined transaction. It looks like our fraud detection system flagged it as suspicious because the location did not match your usual pattern. I\'ve cleared the flag — please try again.'},
+      {role: 'user', text: 'This keeps happening though. Can you stop flagging Target?'},
+      {role: 'bot', text: 'I understand the frustration. I\'ve added Target to your trusted merchants list. You should not see future declines there.'}
+    ]
+  },
+  {
+    id: 'conv-003',
+    turns: [
+      {role: 'bot', text: 'Welcome to Riverbank. What can I do for you?'},
+      {role: 'user', text: 'I want to transfer $500 from savings to my checking account.'},
+      {role: 'bot', text: 'I can do that. Confirming: transfer $500 from your savings account ending in 9921 to your checking account ending in 4827?'},
+      {role: 'user', text: 'Yes, please.'},
+      {role: 'bot', text: 'Transfer complete. Reference number TRF-298471. Your new savings balance is $14,200.50 and checking is $2,841.18.'}
+    ]
+  },
+  {
+    id: 'conv-004',
+    turns: [
+      {role: 'bot', text: 'Hi there, how can I help you today?'},
+      {role: 'user', text: 'I see a charge I don\'t recognize. $340 to "GLBLPMT*XYZ" from yesterday.'},
+      {role: 'bot', text: 'That sounds concerning. I can help you report unauthorized activity. To confirm — you did not make a $340 purchase on May 10?'},
+      {role: 'user', text: 'No, definitely not. I was at home all day.'},
+      {role: 'bot', text: 'Understood. I\'ve frozen your card ending in 4827 and opened a fraud case (case #FR-88241). A replacement card will arrive within 3 business days, and the $340 will be provisionally refunded within 24 hours pending investigation.'},
+      {role: 'user', text: 'Thank you so much for handling this quickly.'}
+    ]
+  }
+];
+
+// ===== DATASETS REGISTRY =====
+// Each dataset is a self-contained workspace: its own conversations, categories,
+// spans, users, and current user. `state` aliases the active dataset's data so
+// the existing labeler code works unchanged.
+
+let datasets = []; // [{id, name, description, createdAt, data: {...}}]
+let activeDatasetId = null;
+let view = 'launcher'; // 'launcher' | 'labeler'
+
+function makeEmptyDatasetData() {
+  return {
+    categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+    conversations: [],
+    spans: {},
+    currentIdx: 0,
+    users: [],
+    currentUserId: null
+  };
+}
+
+let _scratchState = makeEmptyDatasetData();
+let state = _scratchState;
+
+function setActiveDataset(id) {
+  activeDatasetId = id;
+  const ds = datasets.find(d => d.id === id);
+  state = ds ? ds.data : _scratchState;
+}
+function activeDataset() { return datasets.find(d => d.id === activeDatasetId); }
+
+// ============== USERS ==============
+function generateUserId() {
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  let id = '';
+  for (let i = 0; i < 3; i++) id += letters[Math.floor(Math.random() * 26)];
+  for (let i = 0; i < 5; i++) id += digits[Math.floor(Math.random() * 10)];
+  return id;
+}
+function isValidUserId(id) {
+  return /^[a-z]{3}[0-9]{5}$/.test(id);
+}
+function ensureUser() {
+  if (state.users.length === 0) {
+    state.users = [generateUserId(), generateUserId(), generateUserId()];
+  }
+  if (!state.currentUserId || !state.users.includes(state.currentUserId)) {
+    state.currentUserId = state.users[0];
+  }
+}
+
+// ============== DATASET HELPERS ==============
+function datasetStats(ds) {
+  const convs = ds.data.conversations || [];
+  const spansMap = ds.data.spans || {};
+  let totalSpans = 0;
+  let labeledConvs = 0;
+  const annotators = new Set();
+  convs.forEach(c => {
+    const ss = spansMap[c.id] || [];
+    if (ss.length > 0) labeledConvs++;
+    ss.forEach(s => {
+      totalSpans++;
+      if (s.annotator) annotators.add(s.annotator);
+    });
+  });
+  return {
+    conversations: convs.length,
+    labeledConversations: labeledConvs,
+    spans: totalSpans,
+    annotators: annotators.size,
+    progress: convs.length > 0 ? labeledConvs / convs.length : 0
+  };
+}
+
+function createDataset({name, description, includeSamples}) {
+  const id = 'ds-' + uid();
+  const data = makeEmptyDatasetData();
+  if (includeSamples) {
+    data.conversations = JSON.parse(JSON.stringify(SAMPLE_CONVERSATIONS));
+  }
+  const ds = {
+    id, name,
+    description: description || '',
+    createdAt: new Date().toISOString(),
+    data
+  };
+  datasets.push(ds);
+  saveState();
+  return ds;
+}
+
+function deleteDataset(id) {
+  datasets = datasets.filter(d => d.id !== id);
+  if (activeDatasetId === id) {
+    activeDatasetId = null;
+    state = _scratchState;
+  }
+  saveState();
+}
+
+function renameDataset(id, name, description) {
+  const ds = datasets.find(d => d.id === id);
+  if (!ds) return;
+  ds.name = name;
+  if (description !== undefined) ds.description = description;
+  saveState();
+}
+
+function duplicateDataset(id) {
+  const ds = datasets.find(d => d.id === id);
+  if (!ds) return;
+  const copy = JSON.parse(JSON.stringify(ds));
+  copy.id = 'ds-' + uid();
+  copy.name = ds.name + ' (copy)';
+  copy.createdAt = new Date().toISOString();
+  datasets.push(copy);
+  saveState();
+}
+
+
+// ============== PERSISTENCE ==============
+function saveState() {
+  try {
+    localStorage.setItem('span-labeler-registry', JSON.stringify({
+      datasets,
+      activeDatasetId
+    }));
+    flashSaved();
+  } catch(e) { console.error('save failed', e); }
+}
+function loadState() {
+  try {
+    const rawRegistry = localStorage.getItem('span-labeler-registry');
+    if (rawRegistry) {
+      const parsed = JSON.parse(rawRegistry);
+      if (Array.isArray(parsed.datasets)) datasets = parsed.datasets;
+      if (parsed.activeDatasetId) activeDatasetId = parsed.activeDatasetId;
+      datasets.forEach(d => {
+        if (d.data && Array.isArray(d.data.users)) {
+          d.data.users = d.data.users.filter(isValidUserId);
+        }
+      });
+      return;
+    }
+    // Legacy migration
+    const rawOld = localStorage.getItem('span-labeler-state');
+    if (rawOld) {
+      const parsed = JSON.parse(rawOld);
+      const migrated = {
+        id: 'ds-' + uid(),
+        name: 'Imported Workspace',
+        description: 'Migrated from previous version.',
+        createdAt: new Date().toISOString(),
+        data: {
+          categories: parsed.categories || JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+          conversations: parsed.conversations || [],
+          spans: parsed.spans || {},
+          currentIdx: 0,
+          users: Array.isArray(parsed.users) ? parsed.users.filter(isValidUserId) : [],
+          currentUserId: parsed.currentUserId || null
+        }
+      };
+      datasets = [migrated];
+      activeDatasetId = null;
+    }
+  } catch(e) { console.error('load failed', e); }
+}
+let saveTimer = null;
+function flashSaved() {
+  const el = document.getElementById('autosave-indicator');
+  el.textContent = 'Saved';
+  el.style.color = 'var(--user)';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    el.textContent = 'Auto-saved';
+    el.style.color = '';
+  }, 1500);
+}
+
+// ============== HELPERS ==============
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function findLabel(catId, labelId) {
+  const cat = state.categories.find(c => c.id === catId);
+  if (!cat) return null;
+  return cat.labels.find(l => l.id === labelId);
+}
+function currentConv() { return state.conversations[state.currentIdx]; }
+function getSpans(convId) {
+  // Spans visible to the current annotator only.
+  const all = state.spans[convId] || [];
+  if (!state.currentUserId) return all;
+  return all.filter(s => s.annotator === state.currentUserId);
+}
+function getAllSpans(convId) { return state.spans[convId] || []; }
+function spanCount(convId) { return getSpans(convId).length; }
+
+// ============== RENDER: QUEUE ==============
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  list.innerHTML = '';
+  state.conversations.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'queue-item' + (i === state.currentIdx ? ' active' : '');
+    const count = spanCount(c.id);
+    const badgeClass = count > 0 ? 'has-labels' : '';
+    div.innerHTML = `
+      <div class="queue-num">${String(i+1).padStart(3,'0')}</div>
+      <div class="queue-id" title="${escapeHtml(c.id)}">${escapeHtml(c.id)}</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--ink-3);">${count || ''}</div>
+      <div class="queue-badge ${badgeClass}"></div>
+    `;
+    div.addEventListener('click', () => goTo(i));
+    list.appendChild(div);
+  });
+  // stats
+  const total = state.conversations.length;
+  const done = state.conversations.filter(c => spanCount(c.id) > 0).length;
+  document.getElementById('queue-stats').innerHTML = `<span class="done">${done}</span><span class="sep">/</span><span>${total}</span>`;
+}
+
+// ============== RENDER: CONVERSATION ==============
+function renderConversation() {
+  const conv = currentConv();
+  const empty = document.getElementById('empty-state');
+  const view = document.getElementById('conv-view');
+  if (!conv) {
+    empty.style.display = 'flex';
+    view.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  view.style.display = 'block';
+
+  document.getElementById('conv-id').textContent = conv.id;
+  document.getElementById('btn-prev').disabled = state.currentIdx === 0;
+  document.getElementById('btn-next').disabled = state.currentIdx === state.conversations.length - 1;
+
+  const turnsEl = document.getElementById('turns');
+  turnsEl.innerHTML = '';
+  conv.turns.forEach((t, idx) => {
+    const turnDiv = document.createElement('div');
+    turnDiv.className = 'turn';
+    turnDiv.innerHTML = `
+      <div class="turn-meta">
+        <div class="turn-role ${t.role}">${t.role}</div>
+        <div class="turn-idx">#${String(idx+1).padStart(2,'0')}</div>
+      </div>
+      <div class="turn-bubble ${t.role}">
+        <div class="turn-text" data-turn-idx="${idx}">${renderTurnText(t.text, idx)}</div>
+      </div>
+    `;
+    turnsEl.appendChild(turnDiv);
+  });
+}
+
+function renderTurnText(text, turnIdx) {
+  const conv = currentConv();
+  const spans = getSpans(conv.id)
+    .filter(s => s.turnIdx === turnIdx)
+    .sort((a, b) => a.start - b.start);
+  if (spans.length === 0) return escapeHtml(text);
+
+  // We need to handle overlapping by sorting and walking, but for simplicity
+  // we'll render non-overlapping or use the longest matching span at each point.
+  // Walk through and build HTML.
+  let html = '';
+  let cursor = 0;
+  // To deal with overlaps, just render outermost spans by start; nested ones
+  // get a small marker. For a span tool, generally users avoid overlaps, but
+  // we'll handle by chunking.
+  const events = [];
+  spans.forEach(s => {
+    events.push({pos: s.start, type: 'open', span: s});
+    events.push({pos: s.end, type: 'close', span: s});
+  });
+  events.sort((a,b) => a.pos - b.pos || (a.type === 'close' ? -1 : 1));
+
+  let openStack = [];
+  for (let i = 0; i < events.length; i++) {
+    const ev = events[i];
+    if (ev.pos > cursor) {
+      const chunk = text.slice(cursor, ev.pos);
+      html += escapeHtml(chunk);
+      cursor = ev.pos;
+    }
+    if (ev.type === 'open') {
+      const label = findLabel(ev.span.categoryId, ev.span.labelId);
+      const color = label ? label.color : '#888';
+      const name = label ? label.name : '?';
+      html += `<mark data-span-id="${ev.span.id}" style="border-bottom-color:${color}; background:${color}15;">`;
+      openStack.push({span: ev.span, color, name});
+    } else {
+      // close: emit tag for the matching span (the deepest one popped)
+      const popped = openStack.pop();
+      if (popped) {
+        html += `<span class="span-tag" style="background:${popped.color};">${escapeHtml(popped.name)}<span style="opacity:0.7; margin-left:4px; cursor:pointer;" onclick="removeSpan('${ev.span.id}'); event.stopPropagation();">×</span></span>`;
+      }
+      html += '</mark>';
+    }
+  }
+  if (cursor < text.length) html += escapeHtml(text.slice(cursor));
+  return html;
+}
+
+// ============== RENDER: SIDEBAR ==============
+function renderCategories() {
+  const el = document.getElementById('categories-list');
+  el.innerHTML = '';
+  if (state.categories.length === 0) {
+    el.innerHTML = '<div style="color:var(--ink-3); font-size:12px; padding:20px; text-align:center;">No categories yet. Click "Manage Labels" to add some.</div>';
+    return;
+  }
+  state.categories.forEach(cat => {
+    const div = document.createElement('div');
+    div.className = 'category';
+    let labelsHtml = '';
+    cat.labels.forEach(l => {
+      labelsHtml += `<button class="label-btn" style="border-color:${l.color}; color:${l.color};">
+        <span class="swatch" style="background:${l.color};"></span>
+        ${escapeHtml(l.name)}
+      </button>`;
+    });
+    if (cat.labels.length === 0) {
+      labelsHtml = '<div style="font-size:11px; color:var(--ink-3); padding:4px 6px;">No labels in this category.</div>';
+    }
+    div.innerHTML = `
+      <div class="category-head">
+        <div class="category-name">${escapeHtml(cat.name)}</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--ink-3);">${cat.labels.length}</div>
+      </div>
+      <div class="category-body">${labelsHtml}</div>
+    `;
+    el.appendChild(div);
+  });
+}
+
+function renderSpansList() {
+  const conv = currentConv();
+  const el = document.getElementById('spans-list');
+  if (!conv) {
+    el.innerHTML = '<div style="color:var(--ink-3); font-size:12px; padding:20px; text-align:center;">No conversation loaded.</div>';
+    return;
+  }
+  const spans = getSpans(conv.id);
+  document.getElementById('span-count').textContent = spans.length > 0 ? `(${spans.length})` : '';
+  if (spans.length === 0) {
+    el.innerHTML = '<div style="color:var(--ink-3); font-size:12px; padding:20px; text-align:center;">No spans labeled yet. Select text to begin.</div>';
+    return;
+  }
+  el.innerHTML = '';
+  // Group by category
+  const grouped = {};
+  spans.forEach(s => {
+    if (!grouped[s.categoryId]) grouped[s.categoryId] = [];
+    grouped[s.categoryId].push(s);
+  });
+  state.categories.forEach(cat => {
+    if (!grouped[cat.id]) return;
+    const head = document.createElement('div');
+    head.style.cssText = 'font-family:JetBrains Mono,monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.12em; color:var(--ink-3); margin: 12px 0 6px;';
+    head.textContent = cat.name;
+    el.appendChild(head);
+    grouped[cat.id].forEach(s => {
+      const label = findLabel(s.categoryId, s.labelId);
+      const color = label ? label.color : '#888';
+      const name = label ? label.name : '(deleted)';
+      const div = document.createElement('div');
+      div.className = 'span-item';
+      div.innerHTML = `
+        <div class="swatch" style="background:${color};"></div>
+        <div class="span-content">
+          <div class="span-label-name" style="color:${color};">${escapeHtml(name)}</div>
+          <div class="span-text">"${escapeHtml(s.text)}"</div>
+          <div class="span-loc">Turn ${s.turnIdx+1} · ${s.start}–${s.end}</div>
+          ${s.annotator ? `<div class="annotator-chip">by ${escapeHtml(s.annotator)}</div>` : ''}
+        </div>
+        <button class="icon-btn" onclick="removeSpan('${s.id}')" title="Delete">×</button>
+      `;
+      el.appendChild(div);
+    });
+  });
+}
+
+// ============== RENDER: MODAL CATEGORIES ==============
+function renderCatsModal() {
+  const el = document.getElementById('modal-cats-list');
+  el.innerHTML = '';
+  state.categories.forEach((cat, ci) => {
+    const div = document.createElement('div');
+    div.className = 'category';
+    div.style.marginBottom = '12px';
+    let labelsHtml = '';
+    cat.labels.forEach((l, li) => {
+      labelsHtml += `
+        <button class="label-btn" style="border-color:${l.color}; color:${l.color};">
+          <span class="swatch" style="background:${l.color};"></span>
+          ${escapeHtml(l.name)}
+          <span class="remove" onclick="removeLabel(${ci}, ${li}); event.stopPropagation();" title="Remove">×</span>
+        </button>
+      `;
+    });
+    div.innerHTML = `
+      <div class="category-head">
+        <input type="text" value="${escapeHtml(cat.name)}" data-cat-name="${ci}" style="border:none; background:none; font-family:'Fraunces',serif; font-weight:600; font-size:14px; flex:1; outline:none;">
+        <button class="icon-btn" onclick="removeCategory(${ci})" title="Remove category" style="color:var(--accent);">✕</button>
+      </div>
+      <div class="category-body">
+        ${labelsHtml}
+        <div class="add-label-row">
+          <input type="text" placeholder="New label name" data-new-label="${ci}">
+          <input type="color" value="${randomColor()}" data-new-label-color="${ci}">
+          <button onclick="addLabel(${ci})">Add</button>
+        </div>
+      </div>
+    `;
+    el.appendChild(div);
+  });
+  // wire name inputs
+  el.querySelectorAll('input[data-cat-name]').forEach(inp => {
+    inp.addEventListener('input', (e) => {
+      const idx = parseInt(e.target.dataset.catName);
+      state.categories[idx].name = e.target.value;
+      saveState();
+    });
+  });
+}
+
+function randomColor() {
+  const palette = ['#2b4a6f','#b13c2a','#4a6b3a','#c08a2a','#6b4a8e','#2a8a8a','#8a1c1c','#5b8def','#a04a8e'];
+  return palette[Math.floor(Math.random() * palette.length)];
+}
+
+window.addLabel = function(catIdx) {
+  const nameInp = document.querySelector(`input[data-new-label="${catIdx}"]`);
+  const colorInp = document.querySelector(`input[data-new-label-color="${catIdx}"]`);
+  const name = nameInp.value.trim();
+  if (!name) return;
+  state.categories[catIdx].labels.push({
+    id: uid(),
+    name,
+    color: colorInp.value
+  });
+  nameInp.value = '';
+  saveState();
+  renderCatsModal();
+  renderCategories();
+};
+window.removeLabel = function(catIdx, labelIdx) {
+  if (!confirm('Remove this label? Existing spans using it will show "(deleted)".')) return;
+  state.categories[catIdx].labels.splice(labelIdx, 1);
+  saveState();
+  renderCatsModal();
+  renderCategories();
+  renderConversation();
+  renderSpansList();
+};
+window.removeCategory = function(catIdx) {
+  if (!confirm('Remove this entire category and all its labels?')) return;
+  state.categories.splice(catIdx, 1);
+  saveState();
+  renderCatsModal();
+  renderCategories();
+  renderConversation();
+  renderSpansList();
+};
+
+// ============== NAVIGATION ==============
+function goTo(idx) {
+  if (idx < 0 || idx >= state.conversations.length) return;
+  state.currentIdx = idx;
+  hidePopup();
+  renderQueue();
+  renderConversation();
+  renderSpansList();
+}
+
+// ============== SELECTION & LABELING ==============
+let pendingSelection = null;
+
+function handleSelection() {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { hidePopup(); pendingSelection = null; return; }
+  const range = sel.getRangeAt(0);
+  // Find the turn-text container
+  let node = range.startContainer;
+  while (node && (node.nodeType !== 1 || !node.dataset || !node.dataset.turnIdx)) {
+    node = node.parentNode;
+  }
+  if (!node) { hidePopup(); return; }
+  // Both ends must be inside the same turn
+  let endNode = range.endContainer;
+  while (endNode && (endNode.nodeType !== 1 || !endNode.dataset || !endNode.dataset.turnIdx)) {
+    endNode = endNode.parentNode;
+  }
+  if (endNode !== node) { hidePopup(); return; }
+
+  const turnIdx = parseInt(node.dataset.turnIdx);
+  const conv = currentConv();
+  const fullText = conv.turns[turnIdx].text;
+
+  // Compute character offsets relative to fullText using the rendered text content
+  const start = getTextOffset(node, range.startContainer, range.startOffset);
+  const end = getTextOffset(node, range.endContainer, range.endOffset);
+  if (start === null || end === null || start === end) { hidePopup(); return; }
+  const [s, e] = [Math.min(start,end), Math.max(start,end)];
+  const selectedText = fullText.slice(s, e);
+  if (!selectedText.trim()) { hidePopup(); return; }
+
+  pendingSelection = { turnIdx, start: s, end: e, text: selectedText };
+
+  // Show popup near the selection
+  const rect = range.getBoundingClientRect();
+  showPopup(rect);
+}
+
+// Walk the rendered DOM to compute the plaintext offset of a (node, offset)
+// relative to the original turn text. Because we re-render with mark/span tags,
+// the plaintext content of node should equal the original turn text exactly
+// (with HTML-decoded entities), so a text-walk works.
+function getTextOffset(container, targetNode, targetOffset) {
+  let offset = 0;
+  let found = false;
+  function walk(node) {
+    if (found) return;
+    if (node === targetNode) {
+      if (node.nodeType === 3) {
+        offset += targetOffset;
+      } else {
+        // element node: count up to targetOffset children
+        for (let i = 0; i < targetOffset; i++) {
+          offset += node.childNodes[i].textContent.length;
+        }
+      }
+      found = true;
+      return;
+    }
+    if (node.nodeType === 3) {
+      offset += node.nodeValue.length;
+    } else if (node.nodeType === 1) {
+      // skip the span-tag content (it's the visible label name, not part of original text)
+      if (node.classList && node.classList.contains('span-tag')) return;
+      for (let i = 0; i < node.childNodes.length; i++) {
+        walk(node.childNodes[i]);
+        if (found) return;
+      }
+    }
+  }
+  walk(container);
+  return found ? offset : null;
+}
+
+function showPopup(rect) {
+  const popup = document.getElementById('popup');
+  const labelsEl = document.getElementById('popup-labels');
+  labelsEl.innerHTML = '';
+  if (state.categories.length === 0 || state.categories.every(c => c.labels.length === 0)) {
+    labelsEl.innerHTML = '<div style="padding:10px; font-size:11px; opacity:0.7;">No labels defined. Add some in "Manage Labels".</div>';
+  } else {
+    state.categories.forEach(cat => {
+      if (cat.labels.length === 0) return;
+      const divider = document.createElement('div');
+      divider.className = 'cat-divider';
+      divider.textContent = cat.name;
+      labelsEl.appendChild(divider);
+      cat.labels.forEach(l => {
+        const btn = document.createElement('button');
+        btn.className = 'quick-label';
+        btn.style.background = l.color;
+        btn.textContent = l.name;
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          applyLabel(cat.id, l.id);
+        });
+        labelsEl.appendChild(btn);
+      });
+    });
+  }
+  popup.classList.add('visible');
+  // Position
+  const popupRect = popup.getBoundingClientRect();
+  let left = rect.left + (rect.width / 2) - 150;
+  let top = rect.bottom + 8;
+  if (top + 200 > window.innerHeight) top = rect.top - 200;
+  if (left < 8) left = 8;
+  if (left + 320 > window.innerWidth) left = window.innerWidth - 328;
+  popup.style.left = left + 'px';
+  popup.style.top = top + 'px';
+}
+function hidePopup() {
+  document.getElementById('popup').classList.remove('visible');
+  pendingSelection = null;
+}
+
+function applyLabel(categoryId, labelId) {
+  if (!pendingSelection) return;
+  const conv = currentConv();
+  if (!state.spans[conv.id]) state.spans[conv.id] = [];
+  state.spans[conv.id].push({
+    id: uid(),
+    categoryId,
+    labelId,
+    turnIdx: pendingSelection.turnIdx,
+    start: pendingSelection.start,
+    end: pendingSelection.end,
+    text: pendingSelection.text,
+    annotator: state.currentUserId,
+    createdAt: new Date().toISOString()
+  });
+  pendingSelection = null;
+  window.getSelection().removeAllRanges();
+  hidePopup();
+  saveState();
+  renderConversation();
+  renderSpansList();
+  renderQueue();
+}
+
+window.removeSpan = function(spanId) {
+  const conv = currentConv();
+  if (!state.spans[conv.id]) return;
+  state.spans[conv.id] = state.spans[conv.id].filter(s => s.id !== spanId);
+  saveState();
+  renderConversation();
+  renderSpansList();
+  renderQueue();
+};
+
+// ============== IMPORT/EXPORT ==============
+function openImport() { document.getElementById('modal-import').classList.add('visible'); }
+function openExport() {
+  document.getElementById('modal-export').classList.add('visible');
+  refreshExport();
+}
+function refreshExport() {
+  const scope = document.querySelector('input[name="export-scope"]:checked')?.value || 'mine';
+  const data = {
+    categories: state.categories,
+    exportScope: scope,
+    exportedBy: state.currentUserId,
+    exportedAt: new Date().toISOString(),
+    conversations: state.conversations.map(c => {
+      const all = state.spans[c.id] || [];
+      const spans = scope === 'mine'
+        ? all.filter(s => s.annotator === state.currentUserId)
+        : all;
+      return { ...c, spans };
+    })
+  };
+  document.getElementById('export-text').value = JSON.stringify(data, null, 2);
+}
+
+// 'current' = replace active dataset's data; 'new' = create new dataset
+let pendingImportTarget = 'current';
+
+function doImport(jsonStr) {
+  try {
+    const parsed = JSON.parse(jsonStr);
+    let convs = Array.isArray(parsed) ? parsed : parsed.conversations;
+    if (!Array.isArray(convs)) throw new Error('Expected an array of conversations');
+    convs.forEach((c, i) => {
+      if (!c.id) c.id = `conv-${Date.now()}-${i}`;
+      if (!Array.isArray(c.turns)) throw new Error(`Conversation ${c.id} missing 'turns' array`);
+      c.turns.forEach((t, j) => {
+        if (!t.role || !['bot','user'].includes(t.role)) throw new Error(`Turn ${j} in ${c.id} has invalid role`);
+        if (typeof t.text !== 'string') throw new Error(`Turn ${j} in ${c.id} missing text`);
+      });
+    });
+
+    if (pendingImportTarget === 'new') {
+      const nameDefault = (parsed && parsed.name) ? parsed.name : 'Imported Dataset';
+      const name = prompt('Name this imported dataset:', nameDefault);
+      if (!name) return;
+      const description = (parsed && parsed.description) ? parsed.description : '';
+      const ds = createDataset({ name: name.trim(), description, includeSamples: false });
+      ds.data.conversations = convs;
+      ds.data.spans = {};
+      convs.forEach(c => {
+        if (Array.isArray(c.spans)) ds.data.spans[c.id] = c.spans;
+        delete c.spans;
+      });
+      if (parsed.categories && Array.isArray(parsed.categories)) {
+        ds.data.categories = parsed.categories;
+      }
+      ds.data.currentIdx = 0;
+      saveState();
+      document.getElementById('modal-import').classList.remove('visible');
+      pendingImportTarget = 'current';
+      openDataset(ds.id);
+    } else {
+      if (parsed.categories && Array.isArray(parsed.categories)) {
+        state.categories = parsed.categories;
+      }
+      state.conversations = convs;
+      state.spans = {};
+      convs.forEach(c => {
+        if (Array.isArray(c.spans)) state.spans[c.id] = c.spans;
+        delete c.spans;
+      });
+      state.currentIdx = 0;
+      saveState();
+      renderAll();
+      document.getElementById('modal-import').classList.remove('visible');
+    }
+  } catch(e) {
+    alert('Import failed: ' + e.message);
+  }
+}
+
+// ============== RENDER: USER PICKER ==============
+function renderUserPicker() {
+  document.getElementById('current-user-id').textContent = state.currentUserId || '—';
+  const menu = document.getElementById('user-menu');
+  menu.innerHTML = '';
+  state.users.forEach(u => {
+    const item = document.createElement('div');
+    item.className = 'user-menu-item' + (u === state.currentUserId ? ' current' : '');
+    item.innerHTML = `
+      <span class="check">${u === state.currentUserId ? '✓' : ''}</span>
+      <span class="user-menu-id">${escapeHtml(u)}</span>
+      ${state.users.length > 1 ? `<span class="remove-user" title="Remove annotator">×</span>` : ''}
+    `;
+    item.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-user')) {
+        e.stopPropagation();
+        if (!confirm(`Remove annotator ${u} from the picker? Their existing spans are preserved in the data but won't be visible to anyone until you re-add the ID.`)) return;
+        const wasCurrent = state.currentUserId === u;
+        state.users = state.users.filter(x => x !== u);
+        if (wasCurrent) state.currentUserId = state.users[0];
+        saveState();
+        if (wasCurrent) {
+          renderAll();
+        } else {
+          renderUserPicker();
+        }
+        return;
+      }
+      state.currentUserId = u;
+      saveState();
+      document.getElementById('user-menu').classList.remove('visible');
+      renderAll();
+    });
+    menu.appendChild(item);
+  });
+
+  const hint = document.createElement('div');
+  hint.className = 'user-menu-hint';
+  hint.textContent = 'Add annotator';
+  menu.appendChild(hint);
+
+  const adder = document.createElement('div');
+  adder.className = 'user-menu-divider';
+  adder.innerHTML = `
+    <input type="text" id="new-user-input" maxlength="8" placeholder="abc12345" pattern="[a-z]{3}[0-9]{5}">
+    <button id="add-user-generate" title="Generate random ID">↻</button>
+    <button id="add-user-confirm">Add</button>
+  `;
+  menu.appendChild(adder);
+
+  adder.addEventListener('click', (e) => e.stopPropagation());
+  const input = document.getElementById('new-user-input');
+  document.getElementById('add-user-generate').addEventListener('click', () => {
+    input.value = generateUserId();
+    input.focus();
+  });
+  const addUser = () => {
+    const v = input.value.trim().toLowerCase();
+    if (!isValidUserId(v)) {
+      input.style.borderColor = 'var(--accent)';
+      input.placeholder = 'format: abc12345';
+      return;
+    }
+    if (state.users.includes(v)) {
+      state.currentUserId = v;
+    } else {
+      state.users.push(v);
+      state.currentUserId = v;
+    }
+    input.value = '';
+    saveState();
+    renderAll();
+  };
+  document.getElementById('add-user-confirm').addEventListener('click', addUser);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addUser();
+  });
+  input.addEventListener('input', () => {
+    input.style.borderColor = '';
+  });
+}
+
+
+// ============== LAUNCHER ==============
+function showLauncher() {
+  view = 'launcher';
+  activeDatasetId = null;
+  state = _scratchState;
+  saveState();
+  document.getElementById('launcher').classList.add('visible');
+  document.getElementById('labeler-app').style.display = 'none';
+  document.title = 'Span Labeler';
+  renderLauncher();
+}
+
+function openDataset(id) {
+  setActiveDataset(id);
+  ensureUser();
+  view = 'labeler';
+  saveState();
+  document.getElementById('launcher').classList.remove('visible');
+  document.getElementById('labeler-app').style.display = 'grid';
+  const ds = activeDataset();
+  document.getElementById('dataset-context').textContent = ds ? ds.name : '';
+  document.title = ds ? `${ds.name} — Span Labeler` : 'Span Labeler';
+  hidePopup();
+  renderAll();
+}
+
+function renderLauncher() {
+  const grid = document.getElementById('dataset-grid');
+  grid.innerHTML = '';
+  datasets.forEach(ds => {
+    const stats = datasetStats(ds);
+    const card = document.createElement('div');
+    card.className = 'dataset-card';
+    card.innerHTML = `
+      <div class="dataset-card-head">
+        <div style="flex:1; min-width:0;">
+          <div class="dataset-name">${escapeHtml(ds.name)}</div>
+          <div class="dataset-id">${escapeHtml(ds.id.slice(3, 11))} · created ${new Date(ds.createdAt).toLocaleDateString()}</div>
+        </div>
+        <button class="dataset-menu-btn" title="Options">⋯</button>
+        <div class="dataset-menu">
+          <div class="dataset-menu-item" data-action="rename">Rename</div>
+          <div class="dataset-menu-item" data-action="duplicate">Duplicate</div>
+          <div class="dataset-menu-item danger" data-action="delete">Delete</div>
+        </div>
+      </div>
+      <div class="dataset-desc">${escapeHtml(ds.description || 'No description.')}</div>
+      <div class="dataset-stats">
+        <div class="dataset-stat">
+          <div class="stat-num">${stats.conversations}</div>
+          <div class="stat-label">Conversations</div>
+        </div>
+        <div class="dataset-stat">
+          <div class="stat-num">${stats.spans}</div>
+          <div class="stat-label">Spans</div>
+        </div>
+        <div class="dataset-stat">
+          <div class="stat-num">${stats.annotators}</div>
+          <div class="stat-label">Annotators</div>
+        </div>
+      </div>
+      <div>
+        <div class="dataset-progress">
+          <div class="dataset-progress-fill" style="width:${(stats.progress * 100).toFixed(1)}%;"></div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--ink-3); margin-top:4px; text-transform:uppercase; letter-spacing:0.1em;">
+          ${stats.labeledConversations} / ${stats.conversations} touched
+        </div>
+      </div>
+    `;
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.dataset-menu-btn') || e.target.closest('.dataset-menu')) return;
+      openDataset(ds.id);
+    });
+    card.querySelector('.dataset-menu-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.dataset-menu.visible').forEach(m => {
+        if (m !== card.querySelector('.dataset-menu')) m.classList.remove('visible');
+      });
+      card.querySelector('.dataset-menu').classList.toggle('visible');
+    });
+    card.querySelectorAll('.dataset-menu-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = item.dataset.action;
+        card.querySelector('.dataset-menu').classList.remove('visible');
+        if (action === 'rename') {
+          const newName = prompt('Rename dataset:', ds.name);
+          if (newName === null) return;
+          const trimmed = newName.trim();
+          if (!trimmed) return;
+          const newDesc = prompt('Update description (leave blank to keep):', ds.description || '');
+          renameDataset(ds.id, trimmed, newDesc === null ? ds.description : newDesc);
+          renderLauncher();
+        } else if (action === 'duplicate') {
+          duplicateDataset(ds.id);
+          renderLauncher();
+        } else if (action === 'delete') {
+          if (!confirm(`Delete dataset "${ds.name}"? This removes all its conversations, spans, and annotators. Cannot be undone.`)) return;
+          deleteDataset(ds.id);
+          renderLauncher();
+        }
+      });
+    });
+    grid.appendChild(card);
+  });
+
+  const newCard = document.createElement('div');
+  newCard.className = 'dataset-card new';
+  newCard.innerHTML = `
+    <div class="plus-icon">+</div>
+    <div class="new-label">New Dataset</div>
+  `;
+  newCard.addEventListener('click', () => openNewDatasetModal());
+  grid.appendChild(newCard);
+}
+
+function openNewDatasetModal() {
+  document.getElementById('new-dataset-name').value = '';
+  document.getElementById('new-dataset-desc').value = '';
+  document.getElementById('new-dataset-samples').checked = true;
+  document.getElementById('modal-new-dataset').classList.add('visible');
+  setTimeout(() => document.getElementById('new-dataset-name').focus(), 50);
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.dataset-menu') && !e.target.closest('.dataset-menu-btn')) {
+    document.querySelectorAll('.dataset-menu.visible').forEach(m => m.classList.remove('visible'));
+  }
+});
+
+// ============== RENDER ALL ==============
+function renderAll() {
+  renderUserPicker();
+  renderQueue();
+  renderConversation();
+  renderCategories();
+  renderSpansList();
+}
+
+// ============== EVENT WIRING ==============
+document.addEventListener('mouseup', (e) => {
+  // Ignore mouseups inside the popup
+  if (e.target.closest('#popup')) return;
+  setTimeout(handleSelection, 10);
+});
+document.addEventListener('mousedown', (e) => {
+  if (!e.target.closest('#popup') && !e.target.closest('.turn-text')) {
+    hidePopup();
+  }
+});
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowLeft') goTo(state.currentIdx - 1);
+  if (e.key === 'ArrowRight') goTo(state.currentIdx + 1);
+  if (e.key === 'Escape') {
+    hidePopup();
+    document.getElementById('user-menu').classList.remove('visible');
+    document.querySelectorAll('.modal-overlay.visible').forEach(m => m.classList.remove('visible'));
+  }
+});
+
+document.getElementById('btn-prev').addEventListener('click', () => goTo(state.currentIdx - 1));
+document.getElementById('btn-next').addEventListener('click', () => goTo(state.currentIdx + 1));
+
+// User picker open/close
+document.getElementById('user-picker').addEventListener('click', (e) => {
+  const menu = document.getElementById('user-menu');
+  // Don't toggle if click came from inside the menu
+  if (e.target.closest('#user-menu')) return;
+  menu.classList.toggle('visible');
+});
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#user-picker')) {
+    document.getElementById('user-menu').classList.remove('visible');
+  }
+});
+
+document.getElementById('btn-load-sample').addEventListener('click', () => {
+  state.conversations = JSON.parse(JSON.stringify(SAMPLE_CONVERSATIONS));
+  state.currentIdx = 0;
+  saveState();
+  renderAll();
+});
+
+document.getElementById('btn-import').addEventListener('click', () => {
+  pendingImportTarget = 'current';
+  openImport();
+});
+document.getElementById('btn-export').addEventListener('click', () => {
+  document.getElementById('export-mine-id').textContent = state.currentUserId ? `(${state.currentUserId})` : '';
+  openExport();
+});
+document.querySelectorAll('input[name="export-scope"]').forEach(r => {
+  r.addEventListener('change', refreshExport);
+});
+
+document.getElementById('modal-import-close').addEventListener('click', () => document.getElementById('modal-import').classList.remove('visible'));
+document.getElementById('modal-import-cancel').addEventListener('click', () => document.getElementById('modal-import').classList.remove('visible'));
+document.getElementById('modal-import-confirm').addEventListener('click', () => {
+  doImport(document.getElementById('import-text').value);
+});
+document.getElementById('file-input').addEventListener('change', (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    document.getElementById('import-text').value = ev.target.result;
+  };
+  reader.readAsText(f);
+});
+
+document.getElementById('modal-export-close').addEventListener('click', () => document.getElementById('modal-export').classList.remove('visible'));
+document.getElementById('btn-copy-export').addEventListener('click', () => {
+  const ta = document.getElementById('export-text');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(() => {
+    const b = document.getElementById('btn-copy-export');
+    const t = b.textContent;
+    b.textContent = 'Copied!';
+    setTimeout(() => b.textContent = t, 1500);
+  });
+});
+document.getElementById('btn-download-export').addEventListener('click', () => {
+  const ta = document.getElementById('export-text');
+  const blob = new Blob([ta.value], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `annotations-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('btn-categories').addEventListener('click', () => {
+  renderCatsModal();
+  document.getElementById('modal-cats').classList.add('visible');
+});
+document.getElementById('modal-cats-close').addEventListener('click', () => document.getElementById('modal-cats').classList.remove('visible'));
+document.getElementById('modal-cats-done').addEventListener('click', () => document.getElementById('modal-cats').classList.remove('visible'));
+document.getElementById('btn-add-cat').addEventListener('click', () => {
+  const inp = document.getElementById('new-cat-name');
+  const name = inp.value.trim();
+  if (!name) return;
+  state.categories.push({ id: uid(), name, labels: [] });
+  inp.value = '';
+  saveState();
+  renderCatsModal();
+  renderCategories();
+});
+
+
+// Launcher controls
+document.getElementById('btn-launcher-new').addEventListener('click', openNewDatasetModal);
+document.getElementById('btn-launcher-import').addEventListener('click', () => {
+  pendingImportTarget = 'new';
+  openImport();
+});
+document.getElementById('btn-back-launcher').addEventListener('click', () => {
+  showLauncher();
+});
+
+// New-dataset modal
+document.getElementById('modal-new-close').addEventListener('click', () => {
+  document.getElementById('modal-new-dataset').classList.remove('visible');
+});
+document.getElementById('modal-new-cancel').addEventListener('click', () => {
+  document.getElementById('modal-new-dataset').classList.remove('visible');
+});
+document.getElementById('modal-new-create').addEventListener('click', () => {
+  const name = document.getElementById('new-dataset-name').value.trim();
+  if (!name) {
+    document.getElementById('new-dataset-name').style.borderColor = 'var(--accent)';
+    return;
+  }
+  const desc = document.getElementById('new-dataset-desc').value.trim();
+  const samples = document.getElementById('new-dataset-samples').checked;
+  const ds = createDataset({name, description: desc, includeSamples: samples});
+  document.getElementById('modal-new-dataset').classList.remove('visible');
+  openDataset(ds.id);
+});
+document.getElementById('new-dataset-name').addEventListener('input', (e) => {
+  e.target.style.borderColor = '';
+});
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('pane-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+// ============== INIT ==============
+loadState();
+
+// Seed a starter dataset on first visit so the launcher isn't empty.
+if (datasets.length === 0) {
+  createDataset({
+    name: 'Bank Bot — Sample Set',
+    description: 'Four illustrative bank chatbot conversations covering balance checks, card issues, transfers, and fraud reports.',
+    includeSamples: true
+  });
+}
+
+// Resume the last-opened dataset, or land on the launcher.
+if (activeDatasetId && datasets.find(d => d.id === activeDatasetId)) {
+  openDataset(activeDatasetId);
+} else {
+  showLauncher();
+}
+</script>
+</body>
+</html>

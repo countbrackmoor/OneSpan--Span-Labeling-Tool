@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Span Labeler — Bot Conversations</title>
+<title>OneSpan — Span Labeling Tool</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1035,7 +1035,7 @@
 <div class="launcher" id="launcher">
   <div class="launcher-header">
     <div>
-      <div class="launcher-title">Span Labeler</div>
+      <div class="launcher-title">OneSpan</div>
       <div class="launcher-subtitle">Multi-turn conversation annotation workspace</div>
     </div>
     <div class="launcher-actions">
@@ -1079,7 +1079,7 @@
     <button class="back-to-launcher" id="btn-back-launcher" title="Back to datasets">
       <span class="arrow">‹</span> Datasets
     </button>
-    <div class="brand">Span Labeler<span class="dataset-context" id="dataset-context"></span></div>
+    <div class="brand">OneSpan<span class="dataset-context" id="dataset-context"></span></div>
     <div class="header-meta" id="header-meta" style="color: var(--accent); font-weight: 600;">private workspace</div>
     <div class="header-actions">
       <div class="user-picker" id="user-picker">
@@ -2131,7 +2131,7 @@ function showLauncher() {
   saveState();
   document.getElementById('launcher').classList.add('visible');
   document.getElementById('labeler-app').style.display = 'none';
-  document.title = 'Span Labeler';
+  document.title = 'OneSpan';
   renderLauncher();
 }
 
@@ -2144,7 +2144,7 @@ function openDataset(id) {
   document.getElementById('labeler-app').style.display = 'grid';
   const ds = activeDataset();
   document.getElementById('dataset-context').textContent = ds ? ds.name : '';
-  document.title = ds ? `${ds.name} — Span Labeler` : 'Span Labeler';
+  document.title = ds ? `${ds.name} — OneSpan` : 'OneSpan';
   hidePopup();
   renderAll();
 }

@@ -1984,7 +1984,7 @@ function renderCategories() {
     div.className = 'category';
     let labelsHtml = '';
     cat.labels.forEach(l => {
-      labelsHtml += `<button class="label-btn" style="border-color:${l.color}; color:${l.color};">
+      labelsHtml += `<button class="label-btn" style="border-color:${l.color}; color:${l.color}; background:${l.color}18;">
         <span class="swatch" style="background:${l.color};"></span>
         ${escapeHtml(l.name)}
       </button>`;
@@ -2061,7 +2061,7 @@ function renderCatsModal() {
     let labelsHtml = '';
     cat.labels.forEach((l, li) => {
       labelsHtml += `
-        <button class="label-btn" style="border-color:${l.color}; color:${l.color};">
+        <button class="label-btn" style="border-color:${l.color}; color:${l.color}; background:${l.color}18;">
           <span class="swatch" style="background:${l.color};"></span>
           ${escapeHtml(l.name)}
           <span class="remove" onclick="removeLabel(${ci}, ${li}); event.stopPropagation();" title="Remove">×</span>

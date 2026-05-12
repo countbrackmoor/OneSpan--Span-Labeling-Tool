@@ -2873,6 +2873,8 @@ function renderMetrics() {
     return;
   }
 
+  try {
+
   const convs = ds.data.conversations || [];
   const spansMap = ds.data.spans || {};
   const allSpans = Object.values(spansMap).flat();
@@ -2961,23 +2963,18 @@ function renderMetrics() {
   body.appendChild(sec1);
 
   // ===== SECTION 2: Annotator Coverage Table =====
+  // Build spanId -> convId reverse index for fast lookup
+  const spanConvIndex = new Map();
+  convs.forEach(c => {
+    (spansMap[c.id] || []).forEach(s => spanConvIndex.set(s.id, c.id));
+  });
+
   const sec2 = document.createElement('div');
   sec2.className = 'metrics-section';
   let coverageRows = '';
   annotators.forEach(ann => {
     const spans = annotatorMap.get(ann);
-    const touchedConvs = new Set(spans.map(s => s.turnIdx !== undefined
-      ? convs.findIndex(c => (spansMap[c.id] || []).some(ss => ss.annotator === ann && ss === spans[0]))
-      : null)).size;
-    const uniqueConvs = new Set(
-      spans.map(s => {
-        for (const c of convs) {
-          if ((spansMap[c.id] || []).includes(s)) return c.id;
-        }
-        return null;
-      })
-    );
-    uniqueConvs.delete(null);
+    const uniqueConvs = new Set(spans.map(s => spanConvIndex.get(s.id)).filter(Boolean));
     const avgPerConv = uniqueConvs.size > 0 ? (spans.length / uniqueConvs.size).toFixed(1) : '—';
     const labelCounts = new Map();
     spans.forEach(s => {
@@ -3199,6 +3196,7 @@ function renderMetrics() {
         Precision = TP/(TP+FP), Recall = TP/(TP+FN), F1 = harmonic mean.
       </div>
     `;
+    // sec4 must be in DOM before calcF1 can find its elements
     body.appendChild(sec4);
 
     function calcF1() {
@@ -3250,7 +3248,7 @@ function renderMetrics() {
                 <td class="right mono">${fmtPct(r.precision)}</td>
                 <td class="right mono">${fmtPct(r.recall)}</td>
                 <td class="right">
-                  <span class="f1-badge" style="color:var(--${f1cls === 'good' ? 'user' : f1cls === 'mid' ? 'warn' : 'accent'});">${fmtPct(r.f1)}</span>
+                  <span class="f1-badge" style="color:${r.f1 >= 0.8 ? '#7a9b6a' : r.f1 >= 0.5 ? '#d6a044' : '#e85d48'};">${fmtPct(r.f1)}</span>
                 </td>
               </tr>`;
             }).join('')}
@@ -3260,7 +3258,7 @@ function renderMetrics() {
     }
 
     document.getElementById('btn-f1-calc').addEventListener('click', calcF1);
-    calcF1(); // auto-run on load
+    try { calcF1(); } catch(e) { console.error('calcF1 error:', e); }
   }
 
   // ===== SECTION 5: Label Distribution =====
@@ -3358,6 +3356,14 @@ function renderMetrics() {
     </div>
   `;
   body.appendChild(sec6);
+
+  } catch(err) {
+    console.error('renderMetrics error:', err);
+    const errDiv = document.createElement('div');
+    errDiv.className = 'no-data-msg';
+    errDiv.textContent = 'Error rendering metrics: ' + err.message;
+    body.appendChild(errDiv);
+  }
 }
 
 // ---- open / close ----

@@ -466,12 +466,14 @@
     gap: 8px;
     border-bottom: 1px solid var(--rule-2);
     background: var(--paper);
+    color: #e8e8e8;
   }
   .category-name {
     font-family: 'Fraunces', serif;
     font-weight: 600;
     font-size: 14px;
     flex: 1;
+    color: #e8e8e8;
   }
   .category-body { padding: 8px; }
   .label-btn {
@@ -514,8 +516,12 @@
     padding: 4px 6px;
     font-family: 'Inter Tight', sans-serif;
     font-size: 12px;
-    background: var(--paper);
+    background: #d8d4cc;
+    color: #1a1a1a;
     border-radius: 2px;
+  }
+  .add-label-row input[type="text"]::placeholder {
+    color: #222;
   }
   .add-label-row input[type="color"] {
     width: 26px; height: 26px;
@@ -681,9 +687,10 @@
     padding: 16px 22px;
     border-bottom: 1px solid var(--rule);
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 16px;
+    position: relative;
   }
   .metrics-section-title {
     font-family: 'Fraunces', serif;
@@ -901,6 +908,145 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
   }
+
+  /* === METRIC INFO POPOVERS === */
+  .info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1px solid var(--ink-3);
+    color: var(--ink-3);
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    font-style: normal;
+    cursor: pointer;
+    background: none;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    position: relative;
+    top: -1px;
+  }
+  .info-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .info-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .info-popover {
+    position: absolute;
+    z-index: 300;
+    width: 340px;
+    background: #1e1e1e;
+    border: 1px solid #3a3a3a;
+    border-radius: 5px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.5);
+    padding: 0;
+    display: none;
+    top: calc(100% + 8px);
+    left: 0;
+    pointer-events: auto;
+  }
+  .info-popover.visible { display: block; }
+  .info-popover-arrow {
+    position: absolute;
+    top: -5px;
+    left: 16px;
+    width: 10px;
+    height: 10px;
+    background: #1e1e1e;
+    border-left: 1px solid #3a3a3a;
+    border-top: 1px solid #3a3a3a;
+    transform: rotate(45deg);
+  }
+  .info-popover-head {
+    padding: 11px 14px 9px;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .info-popover-title {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e8e8e8;
+    letter-spacing: -0.01em;
+  }
+  .info-popover-close {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+    line-height: 1;
+  }
+  .info-popover-close:hover { color: #e8e8e8; }
+  .info-popover-body {
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.65;
+    color: #b8b8b8;
+    font-family: 'Inter Tight', sans-serif;
+  }
+  .info-popover-body p {
+    margin: 0 0 8px;
+  }
+  .info-popover-body p:last-child { margin-bottom: 0; }
+  .info-popover-body strong {
+    color: #e8e8e8;
+    font-weight: 600;
+  }
+  .info-popover-body .formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: #141414;
+    border: 1px solid #2a2a2a;
+    border-radius: 3px;
+    padding: 6px 10px;
+    margin: 6px 0;
+    color: #d6a044;
+    display: block;
+  }
+  .info-popover-body .interp-scale {
+    display: flex;
+    gap: 0;
+    margin: 8px 0 4px;
+    border-radius: 3px;
+    overflow: hidden;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .interp-scale-item {
+    flex: 1;
+    padding: 4px 2px;
+    color: #fff;
+    opacity: 0.9;
+  }
+  .metrics-section-head {
+    position: relative;
+  }
+  .metrics-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+  }
+
   .metrics-footnote {
     font-size: 11px;
     color: var(--ink-3);
@@ -939,7 +1085,61 @@
     cursor: pointer;
   }
 
-    /* === LAUNCHER === */
+  
+  .dataset-card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 14px;
+    border-top: 1px solid var(--rule-2);
+    margin-top: 2px;
+  }
+  .dataset-card-actions .btn {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+    font-size: 11px;
+    padding: 6px 10px;
+    letter-spacing: 0.04em;
+  }
+  .dataset-card-actions .btn-metrics {
+    background: transparent;
+    border: 1px solid #333;
+    color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border-radius: 2px;
+    padding: 6px 10px;
+    transition: all 0.15s ease;
+    flex: 1;
+  }
+  .dataset-card-actions .btn-metrics:hover {
+    border-color: var(--ink-3);
+    color: var(--ink);
+    background: #1e1e1e;
+  }
+  .dataset-card-actions .btn-open {
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    color: #111;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    padding: 6px 14px;
+    transition: all 0.15s ease;
+    flex: 2;
+    letter-spacing: 0.01em;
+  }
+  .dataset-card-actions .btn-open:hover {
+    background: #ccc;
+    border-color: #ccc;
+  }
+
+  /* === LAUNCHER === */
   .launcher {
     display: none;
     flex-direction: column;
@@ -1352,7 +1552,7 @@
 <div class="metrics-view" id="metrics-view">
   <div class="metrics-header">
     <button class="back-to-launcher" id="btn-metrics-close" style="margin-right:4px;">
-      <span class="arrow">‹</span> Back
+      <span class="arrow">‹</span> Datasets
     </button>
     <div class="metrics-title">§ Annotation Metrics</div>
     <div class="metrics-dataset-name" id="metrics-dataset-name"></div>
@@ -1416,7 +1616,6 @@
     <div class="brand">OneSpan - Span Labeling Tool<span class="dataset-context" id="dataset-context"></span></div>
     <div class="header-meta" id="header-meta" style="color: var(--accent); font-weight: 600;">private workspace</div>
     <div class="header-actions">
-      <button class="btn" id="btn-open-metrics">Metrics</button>
       <div class="user-picker" id="user-picker">
         <span class="user-label">Annotator</span>
         <span class="user-id" id="current-user-id">—</span>
@@ -1984,7 +2183,7 @@ function renderCategories() {
     div.className = 'category';
     let labelsHtml = '';
     cat.labels.forEach(l => {
-      labelsHtml += `<button class="label-btn" style="border-color:${l.color}; color:${l.color}; background:${l.color}18;">
+      labelsHtml += `<button class="label-btn" style="border-color:${l.color}; color:${l.color}; background:${l.color}26;">
         <span class="swatch" style="background:${l.color};"></span>
         ${escapeHtml(l.name)}
       </button>`;
@@ -2061,7 +2260,7 @@ function renderCatsModal() {
     let labelsHtml = '';
     cat.labels.forEach((l, li) => {
       labelsHtml += `
-        <button class="label-btn" style="border-color:${l.color}; color:${l.color}; background:${l.color}18;">
+        <button class="label-btn" style="border-color:${l.color}; color:${l.color}; background:${l.color}26;">
           <span class="swatch" style="background:${l.color};"></span>
           ${escapeHtml(l.name)}
           <span class="remove" onclick="removeLabel(${ci}, ${li}); event.stopPropagation();" title="Remove">×</span>
@@ -2070,7 +2269,7 @@ function renderCatsModal() {
     });
     div.innerHTML = `
       <div class="category-head">
-        <input type="text" value="${escapeHtml(cat.name)}" data-cat-name="${ci}" style="border:none; background:none; font-family:'Fraunces',serif; font-weight:600; font-size:14px; flex:1; outline:none;">
+        <input type="text" value="${escapeHtml(cat.name)}" data-cat-name="${ci}" style="border:none; background:none; font-family:'Fraunces',serif; font-weight:600; font-size:14px; flex:1; outline:none; color:#e8e8e8;">
         <button class="icon-btn" onclick="removeCategory(${ci})" title="Remove category" style="color:var(--accent);">✕</button>
       </div>
       <div class="category-body">
@@ -2527,9 +2726,15 @@ function renderLauncher() {
           ${stats.labeledConversations} / ${stats.conversations} touched
         </div>
       </div>
+      <div class="dataset-card-actions">
+        <button class="btn-metrics" data-action="metrics">§ Metrics</button>
+        <button class="btn-open" data-action="open">Open →</button>
+      </div>
     `;
+    // Card click only triggers if not on a button/menu
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.dataset-menu-btn') || e.target.closest('.dataset-menu')) return;
+      if (e.target.closest('.dataset-menu-btn') || e.target.closest('.dataset-menu') ||
+          e.target.closest('.dataset-card-actions')) return;
       openDataset(ds.id);
     });
     card.querySelector('.dataset-menu-btn').addEventListener('click', (e) => {
@@ -2561,6 +2766,15 @@ function renderLauncher() {
           renderLauncher();
         }
       });
+    });
+    // Card action buttons: Open and Metrics
+    card.querySelector('[data-action="open"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDataset(ds.id);
+    });
+    card.querySelector('[data-action="metrics"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      openMetricsForDataset(ds.id);
     });
     grid.appendChild(card);
   });
@@ -2867,6 +3081,155 @@ function fmtPct(v) {
   return (v * 100).toFixed(1) + '%';
 }
 
+
+// ============================================================
+// METRIC INFO POPOVERS
+// ============================================================
+const METRIC_DEFS = {
+  overview: {
+    title: "Overview — IAA Summary",
+    body: `<p><strong>Inter-Annotator Agreement (IAA)</strong> measures how consistently different people label the same data. High IAA means your label scheme is clear and your annotators understand it the same way — low IAA is a signal to revisit guidelines or adjudicate disagreements before training a model.</p>
+<p><strong>Fleiss' κ</strong> generalises Cohen's κ to any number of annotators simultaneously. It accounts for the fact that some agreement happens purely by chance (e.g. two annotators both leaving a span blank).</p>
+<span class="formula">κ = (P̄ − Pₑ) / (1 − Pₑ)</span>
+<div class="interp-scale">
+  <div class="interp-scale-item" style="background:#8a1c1c;">&lt;0 Poor</div>
+  <div class="interp-scale-item" style="background:#b13c2a;">0–0.20 Slight</div>
+  <div class="interp-scale-item" style="background:#c08a2a;">0.21–0.40 Fair</div>
+  <div class="interp-scale-item" style="background:#7a9b6a80;">0.41–0.60 Mod.</div>
+  <div class="interp-scale-item" style="background:#4a6b3a;">0.61–0.80 Subs.</div>
+  <div class="interp-scale-item" style="background:#2a5a2a;">≥0.80 Perf.</div>
+</div>
+<p style="margin-top:8px;"><strong>Dataset coverage</strong> shows what fraction of conversations have been touched by any annotator — useful for tracking labeling progress.</p>`
+  },
+  coverage: {
+    title: "Annotator Coverage",
+    body: `<p>Shows the labeling activity of each individual annotator. Useful for spotting <strong>imbalanced workloads</strong> (one annotator doing all the work) or <strong>coverage gaps</strong> (conversations that no one has labeled yet).</p>
+<p><strong>Avg spans/conv</strong> is a proxy for annotation density — a very low number may indicate annotators are skimming; a very high number may indicate over-labeling or label scheme confusion.</p>
+<p><strong>Most-Used Label</strong> can surface annotator bias — if one person almost exclusively uses one label while others use a spread, their understanding of the scheme may differ.</p>`
+  },
+  cohens_kappa: {
+    title: "Cohen's κ — Pairwise Agreement",
+    body: `<p><strong>Cohen's κ</strong> measures agreement between exactly two annotators, corrected for chance. Each cell shows how well that pair of annotators agreed on which characters to label and with which label.</p>
+<span class="formula">κ = (P_o − P_e) / (1 − P_e)</span>
+<p><strong>P_o</strong> = observed agreement (fraction of character positions where both annotators assigned the same label or both left it blank). <strong>P_e</strong> = expected agreement by chance given each annotator's label distribution.</p>
+<p>Read this matrix looking for <strong>outlier pairs</strong> — if one annotator agrees well with everyone except one other, that pair may need to discuss their interpretation of a specific label.</p>
+<p>Values are computed at character-position granularity (Artstein &amp; Poesio, 2008) — the standard approach for span annotation.</p>`
+  },
+  krippendorff: {
+    title: "Krippendorff's α",
+    body: `<p><strong>Krippendorff's α</strong> is a more flexible reliability measure that handles missing data and unequal annotator workloads better than Cohen's κ. It's often preferred in NLP annotation projects where not every annotator labels every item.</p>
+<span class="formula">α = 1 − D_o / D_e</span>
+<p><strong>D_o</strong> = observed disagreement; <strong>D_e</strong> = expected disagreement by chance. A value of 1.0 = perfect agreement; 0 = agreement at chance level; negative = systematic disagreement.</p>
+<p>Krippendorff recommends <strong>α ≥ 0.80</strong> for reliable data and <strong>α ≥ 0.67</strong> as a lower bound for tentative conclusions. Values below 0.67 suggest the annotation scheme or guidelines need revision before the data is used for model training.</p>`
+  },
+  pct_agreement: {
+    title: "Raw Percentage Agreement",
+    body: `<p><strong>Percentage agreement</strong> is the simplest IAA measure: the fraction of character positions where two annotators assigned the same label (including both leaving it blank).</p>
+<span class="formula">PA = agreements / total positions</span>
+<p>It is <strong>not corrected for chance</strong>, which means it can look artificially high when labels are sparse — if 95% of characters are unlabeled and both annotators tend to label nothing, they'll agree 95% of the time even if their labeled spans never overlap.</p>
+<p>Use this as a <strong>sanity check</strong> alongside κ and α. A high PA but low κ is a red flag indicating your labels are very rare and the apparent agreement is mostly "both left it blank."</p>`
+  },
+  f1: {
+    title: "Per-Label Precision / Recall / F1",
+    body: `<p>Treats one annotator as the <strong>reference</strong> (gold standard) and evaluates how well the <strong>hypothesis</strong> annotator reproduces it, label by label. This is useful for adjudication workflows where one senior annotator's labels are the target.</p>
+<p><strong>Span matching</strong> uses Jaccard overlap ≥ 0.1 (lenient). A hypothesis span counts as a True Positive if it overlaps sufficiently with a reference span of the same label.</p>
+<span class="formula">Precision = TP / (TP + FP)
+Recall    = TP / (TP + FN)
+F1        = 2 × P × R / (P + R)</span>
+<p><strong>FP</strong> = spans the hypothesis added that the reference didn't have. <strong>FN</strong> = spans the reference has that the hypothesis missed. Low recall on a specific label often means annotators disagree on whether that label applies; low precision means one annotator is over-applying it.</p>`
+  },
+  distribution: {
+    title: "Label Distribution",
+    body: `<p>Shows how frequently each label was used across all annotators combined. Useful for spotting <strong>class imbalance</strong> — a highly skewed distribution (one label used 10× more than others) can make IAA metrics misleading and makes it harder to train a balanced model.</p>
+<p>If a label appears very rarely, its κ and F1 scores will be unreliable (few observations = high variance). Consider whether rare labels should be <strong>merged, split, or dropped</strong> from the scheme.</p>
+<p>The bar lengths are relative to the most-used label, not to total span count — hover a bar to see the percentage of all spans.</p>`
+  },
+  span_stats: {
+    title: "Span Statistics",
+    body: `<p>Describes the geometry of annotations — how long (in characters) the labeled spans are. This helps diagnose annotator behaviour differences:</p>
+<p><strong>Mean span length</strong>: a much shorter mean for one annotator vs others suggests they are labeling individual words while others label full phrases — a sign of guideline ambiguity about span boundaries.</p>
+<p><strong>High variance</strong> (large gap between min and max) is normal for open-ended labels like "Intent" but unusual for narrow labels like "Amount" — investigate if you see unexpected outliers.</p>
+<p><strong>Avg spans/labeled conv</strong> measures labeling density. Consistently low values may mean annotators are only marking the most obvious instances and missing subtler ones.</p>`
+  }
+};
+
+let _activePopover = null;
+
+function makeInfoBtn(defKey) {
+  const wrap = document.createElement('span');
+  wrap.style.cssText = 'position:relative; display:inline-block;';
+
+  const btn = document.createElement('button');
+  btn.className = 'info-btn';
+  btn.textContent = 'i';
+  btn.setAttribute('aria-label', 'More information');
+
+  const def = METRIC_DEFS[defKey];
+  if (!def) { wrap.appendChild(btn); return wrap; }
+
+  const pop = document.createElement('div');
+  pop.className = 'info-popover';
+  pop.innerHTML = `
+    <div class="info-popover-arrow"></div>
+    <div class="info-popover-head">
+      <div class="info-popover-title">${def.title}</div>
+      <button class="info-popover-close" aria-label="Close">✕</button>
+    </div>
+    <div class="info-popover-body">${def.body}</div>
+  `;
+
+  function openPop(e) {
+    e.stopPropagation();
+    if (_activePopover && _activePopover !== pop) {
+      _activePopover.classList.remove('visible');
+      _activePopover._btn && _activePopover._btn.classList.remove('active');
+    }
+    const isOpen = pop.classList.contains('visible');
+    pop.classList.toggle('visible', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+    _activePopover = isOpen ? null : pop;
+    pop._btn = btn;
+
+    // Flip horizontally if it would overflow right edge
+    if (!isOpen) {
+      requestAnimationFrame(() => {
+        const rect = pop.getBoundingClientRect();
+        const overflow = rect.right - window.innerWidth + 12;
+        if (overflow > 0) {
+          pop.style.left = 'auto';
+          pop.style.right = '0';
+          pop.querySelector('.info-popover-arrow').style.left = 'auto';
+          pop.querySelector('.info-popover-arrow').style.right = '16px';
+        } else {
+          pop.style.left = '';
+          pop.style.right = '';
+        }
+      });
+    }
+  }
+
+  btn.addEventListener('click', openPop);
+  pop.querySelector('.info-popover-close').addEventListener('click', (e) => {
+    e.stopPropagation();
+    pop.classList.remove('visible');
+    btn.classList.remove('active');
+    _activePopover = null;
+  });
+
+  wrap.appendChild(btn);
+  wrap.appendChild(pop);
+  return wrap;
+}
+
+// Close any open popover when clicking outside
+document.addEventListener('click', (e) => {
+  if (_activePopover && !e.target.closest('.info-popover') && !e.target.closest('.info-btn')) {
+    _activePopover.classList.remove('visible');
+    if (_activePopover._btn) _activePopover._btn.classList.remove('active');
+    _activePopover = null;
+  }
+});
+
 // ---- main metrics renderer ----
 function renderMetrics() {
   const ds = activeDataset();
@@ -2966,6 +3329,7 @@ function renderMetrics() {
     </div>
   `;
   body.appendChild(sec1);
+  patchSectionHead(sec1, 'overview');
 
   // ===== SECTION 2: Annotator Coverage Table =====
   // Build spanId -> convId reverse index for fast lookup
@@ -3024,6 +3388,7 @@ function renderMetrics() {
     </div>
   `;
   body.appendChild(sec2);
+  patchSectionHead(sec2, 'coverage');
 
   // ===== SECTION 3: Pairwise Kappa + Alpha Matrix =====
   if (annotators.length >= 2) {
@@ -3096,6 +3461,7 @@ function renderMetrics() {
       </div>
     `;
     body.appendChild(sec3);
+    patchSectionHead(sec3, 'cohens_kappa');
 
     // Krippendorff's alpha matrix
     const sec3b = document.createElement('div');
@@ -3134,6 +3500,7 @@ function renderMetrics() {
       </div>
     `;
     body.appendChild(sec3b);
+    patchSectionHead(sec3b, 'krippendorff');
 
     // Percentage agreement matrix
     const sec3c = document.createElement('div');
@@ -3172,6 +3539,7 @@ function renderMetrics() {
       </div>
     `;
     body.appendChild(sec3c);
+    patchSectionHead(sec3c, 'pct_agreement');
   }
 
   // ===== SECTION 4: Per-label F1 (reference vs hypothesis) =====
@@ -3203,6 +3571,7 @@ function renderMetrics() {
     `;
     // sec4 must be in DOM before calcF1 can find its elements
     body.appendChild(sec4);
+    patchSectionHead(sec4, 'f1');
 
     function calcF1() {
       const refId = document.getElementById('f1-ref').value;
@@ -3325,6 +3694,7 @@ function renderMetrics() {
     <div class="metrics-section-body">${distHtml}</div>
   `;
   body.appendChild(sec5);
+  patchSectionHead(sec5, 'distribution');
 
   // ===== SECTION 6: Span-level statistics =====
   const spanLengths = allSpans.map(s => s.end - s.start);
@@ -3361,6 +3731,7 @@ function renderMetrics() {
     </div>
   `;
   body.appendChild(sec6);
+  patchSectionHead(sec6, 'span_stats');
 
   } catch(err) {
     console.error('renderMetrics error:', err);
@@ -3371,13 +3742,34 @@ function renderMetrics() {
   }
 }
 
+
+function patchSectionHead(sectionEl, defKey) {
+  const head = sectionEl.querySelector('.metrics-section-head');
+  if (!head) return;
+  const titleEl = head.querySelector('.metrics-section-title');
+  if (!titleEl) return;
+
+  // Wrap title + info btn in a flex group
+  const group = document.createElement('div');
+  group.className = 'metrics-title-group';
+  titleEl.parentNode.insertBefore(group, titleEl);
+  group.appendChild(titleEl);
+  group.appendChild(makeInfoBtn(defKey));
+}
+
 // ---- open / close ----
-function openMetrics() {
+function openMetricsForDataset(id) {
+  // Set the active dataset for rendering without entering the labeler view
+  setActiveDataset(id);
   document.getElementById('metrics-view').classList.add('visible');
+  document.getElementById('labeler-app').style.display = 'none';
+  document.getElementById('launcher').classList.remove('visible');
   renderMetrics();
 }
 function closeMetrics() {
   document.getElementById('metrics-view').classList.remove('visible');
+  // Always return to launcher from metrics
+  showLauncher();
 }
 
 // ============== RENDER ALL ==============
@@ -3503,7 +3895,6 @@ document.getElementById('btn-add-cat').addEventListener('click', () => {
 
 
 // Metrics view
-document.getElementById('btn-open-metrics').addEventListener('click', openMetrics);
 document.getElementById('btn-metrics-close').addEventListener('click', closeMetrics);
 document.getElementById('btn-metrics-refresh').addEventListener('click', renderMetrics);
 

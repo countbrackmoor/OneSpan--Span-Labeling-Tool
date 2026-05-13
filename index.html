@@ -2515,6 +2515,118 @@
       font-weight: 600;
     }
 
+
+    /* === REVIEW MODE === */
+    .review-banner {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 8px 20px;
+      background: #1a1200;
+      border-bottom: 1px solid #3a2a00;
+      font-size: 12px;
+      color: #c4a35a;
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+    }
+
+    .review-banner-label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.7;
+    }
+
+    .review-annotator-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    .review-annotator-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border: 1px solid #3a2a00;
+      border-radius: 2px;
+      font-size: 11px;
+      cursor: pointer;
+      background: transparent;
+      color: #c4a35a;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.12s ease;
+    }
+
+    .review-annotator-pill:hover {
+      background: #2a1e00;
+      border-color: #c4a35a;
+    }
+
+    .review-annotator-pill.active {
+      background: #c4a35a;
+      border-color: #c4a35a;
+      color: #000;
+      font-weight: 600;
+    }
+
+    .review-annotator-pill .pill-count {
+      font-size: 9px;
+      opacity: 0.7;
+    }
+
+    .review-exit-btn {
+      background: none;
+      border: 1px solid #3a2a00;
+      color: #c4a35a;
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 2px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.12s ease;
+    }
+
+    .review-exit-btn:hover {
+      background: #2a1e00;
+      border-color: #c4a35a;
+    }
+
+    /* In review mode: disable interactive span elements */
+    body.review-mode .turn-text mark .span-tag span {
+      display: none;
+    }
+
+    body.review-mode .turn-text {
+      cursor: default;
+      user-select: text;
+    }
+
+    body.review-mode #btn-complete {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    body.review-mode #btn-next-incomplete {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    body.review-mode .add-label-row {
+      display: none;
+    }
+
+    /* Annotator attribution badge on spans in review mode */
+    body.review-mode .span-tag::before {
+      content: attr(data-annotator) ' · ';
+      opacity: 0.6;
+      font-size: 9px;
+    }
+
     /* === LAUNCHER === */
     .launcher {
       display: none;
@@ -3150,12 +3262,20 @@
           <span class="user-chip-role" id="chip-role"></span>
           <span class="user-chip-logout" id="btn-logout" title="Sign out">⏻</span>
         </div>
+        <button class="btn" id="btn-review" style="display:none;">Review</button>
         <button class="btn" id="btn-admin" style="display:none;">Admin</button>
         <button class="btn" id="btn-import">Import</button>
         <button class="btn" id="btn-export">Export</button>
         <button class="btn primary" id="btn-categories">Manage Labels</button>
       </div>
     </header>
+
+    <!-- Review mode banner — hidden by default -->
+    <div id="review-banner" class="review-banner" style="display:none;">
+      <span class="review-banner-label">Review</span>
+      <div class="review-annotator-pills" id="review-annotator-pills"></div>
+      <button class="review-exit-btn" id="btn-review-exit">Exit review</button>
+    </div>
 
     <nav class="queue">
       <div class="queue-head">
@@ -3791,6 +3911,76 @@
       editingDatasetId = null;
     }
 
+
+    // ============== REVIEW MODE ==============
+    let reviewMode = false;
+    let reviewAnnotatorId = null;  // which annotator we're viewing
+
+    function getSpansForDisplay(convId) {
+      // In review mode show the selected annotator's spans;
+      // otherwise show the logged-in annotator's spans only.
+      const all = state.spans[convId] || [];
+      if (reviewMode && reviewAnnotatorId) {
+        return all.filter(s => s.annotator === reviewAnnotatorId);
+      }
+      if (!state.currentUserId) return all;
+      return all.filter(s => s.annotator === state.currentUserId);
+    }
+
+    function enterReviewMode() {
+      reviewMode = true;
+      document.body.classList.add('review-mode');
+      document.getElementById('review-banner').style.display = 'flex';
+
+      // Build the annotator list from all spans in this dataset
+      const annotatorSpanCounts = {};
+      state.conversations.forEach(c => {
+        (state.spans[c.id] || []).forEach(s => {
+          annotatorSpanCounts[s.annotator] = (annotatorSpanCounts[s.annotator] || 0) + 1;
+        });
+      });
+
+      const annotators = Object.entries(annotatorSpanCounts)
+        .sort((a, b) => b[1] - a[1]);
+
+      if (annotators.length === 0) {
+        document.getElementById('review-annotator-pills').innerHTML =
+          '<span style="opacity:0.5; font-size:11px;">No annotations yet</span>';
+        return;
+      }
+
+      // Default to first annotator
+      reviewAnnotatorId = annotators[0][0];
+      renderReviewPills(annotators);
+      renderAll();
+    }
+
+    function renderReviewPills(annotators) {
+      const container = document.getElementById('review-annotator-pills');
+      container.innerHTML = '';
+      annotators.forEach(([annotatorId, count]) => {
+        const pill = document.createElement('button');
+        pill.className = 'review-annotator-pill' + (annotatorId === reviewAnnotatorId ? ' active' : '');
+        pill.innerHTML = escapeHtml(annotatorId) + '<span class="pill-count">(' + count + ')</span>';
+        pill.addEventListener('click', () => {
+          reviewAnnotatorId = annotatorId;
+          document.querySelectorAll('.review-annotator-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          renderConversation();
+          renderSpansList();
+        });
+        container.appendChild(pill);
+      });
+    }
+
+    function exitReviewMode() {
+      reviewMode = false;
+      reviewAnnotatorId = null;
+      document.body.classList.remove('review-mode');
+      document.getElementById('review-banner').style.display = 'none';
+      renderAll();
+    }
+
     // ============== COMPLETION HELPERS ==============
     // completions: { convId: [annotatorId, ...] }  (stored in state.completions)
 
@@ -4235,10 +4425,7 @@
     }
     function currentConv() { return state.conversations[state.currentIdx]; }
     function getSpans(convId) {
-      // Spans visible to the current annotator only.
-      const all = state.spans[convId] || [];
-      if (!state.currentUserId) return all;
-      return all.filter(s => s.annotator === state.currentUserId);
+      return getSpansForDisplay(convId);
     }
     function getAllSpans(convId) { return state.spans[convId] || []; }
     function spanCount(convId) { return getSpans(convId).length; }
@@ -4429,7 +4616,8 @@
           // close: emit tag for the matching span (the deepest one popped)
           const popped = openStack.pop();
           if (popped) {
-            html += `<span class="span-tag" style="background:${popped.color};">${escapeHtml(popped.name)}<span style="opacity:0.7; margin-left:4px; cursor:pointer;" onclick="removeSpan('${ev.span.id}'); event.stopPropagation();">×</span></span>`;
+            const annotatorAttr = reviewMode ? ` data-annotator="${escapeHtml(ev.span.annotator || '')}"` : '';
+            html += `<span class="span-tag" style="background:${popped.color};"${annotatorAttr}>${escapeHtml(popped.name)}<span style="opacity:0.7; margin-left:4px; cursor:pointer;" onclick="removeSpan('${ev.span.id}'); event.stopPropagation();">×</span></span>`;
           }
           html += '</mark>';
         }
@@ -4786,6 +4974,7 @@
     }
 
     function applyLabel(categoryId, labelId) {
+      if (reviewMode) return; // read-only in review mode
       if (!pendingSelection) return;
       const conv = currentConv();
       if (!state.spans[conv.id]) state.spans[conv.id] = [];
@@ -6224,6 +6413,7 @@ F1        = 2 × P × R / (P + R)</span>
         return;
       }
       // C = toggle completion for current conversation
+      if (reviewMode) return;
       if (e.key.toLowerCase() === 'c' && !pendingSelection) {
         const conv = currentConv();
         if (conv) { e.preventDefault(); toggleComplete(conv.id); }
@@ -6473,6 +6663,7 @@ F1        = 2 × P × R / (P + R)</span>
       document.getElementById('chip-role').textContent = currentUser.role === 'admin' ? 'admin' : '';
       if (currentUser.role === 'admin') {
         adminBtn.style.display = '';
+        document.getElementById('btn-review').style.display = '';
       }
     }
 
@@ -6557,6 +6748,13 @@ F1        = 2 × P × R / (P + R)</span>
     });
 
     // Admin panel
+    document.getElementById('btn-review').addEventListener('click', () => {
+      if (!activeDatasetId) { alert('Open a dataset first.'); return; }
+      enterReviewMode();
+    });
+
+    document.getElementById('btn-review-exit').addEventListener('click', exitReviewMode);
+
     document.getElementById('btn-admin').addEventListener('click', () => {
       document.getElementById('admin-view').classList.add('visible');
       renderAdminPanel();

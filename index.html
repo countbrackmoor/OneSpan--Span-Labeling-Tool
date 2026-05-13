@@ -3077,6 +3077,18 @@ function duplicateDataset(id) {
 // ============== SERVER PERSISTENCE ==============
 // All state is stored server-side in dataset.json.
 // saveState() POSTs the full registry; loadState() GETs it on startup.
+//
+// URL strategy: derive the API base from window.location so this works
+// both when accessed directly (http://localhost:8765/) AND through
+// JupyterLab's proxy (/user/alice/proxy/8765/) without any config.
+
+function _apiBase() {
+  // window.location.pathname when proxied is e.g. /user/alice/proxy/8765/
+  // We want the API calls to go to the same path root, not to the page origin root.
+  // Using a relative URL like 'data' (no leading slash) achieves this correctly
+  // because the browser resolves it relative to the current page URL.
+  return '';  // empty = use relative URLs ('data', not '/data')
+}
 
 let _saveDebounceTimer = null;
 let _pendingSave = false;
@@ -3085,7 +3097,7 @@ function saveState() {
   const _ds = datasets.find(d => d.id === activeDatasetId);
   if (_ds) _ds.updatedAt = new Date().toISOString();
 
-  // Debounce: coalesce rapid saves (e.g. typing) into one request per 600ms
+  // Debounce: coalesce rapid saves into one request per 600ms
   _pendingSave = true;
   clearTimeout(_saveDebounceTimer);
   _saveDebounceTimer = setTimeout(_flushSave, 600);
@@ -3100,16 +3112,21 @@ async function _flushSave() {
   indicator.style.color = 'var(--ink-3)';
 
   try {
-    const resp = await fetch('/data', {
+    const resp = await fetch('data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ datasets, activeDatasetId })
     });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    if (!resp.ok) {
+      let detail = '';
+      try { detail = (await resp.json()).detail || ''; } catch(_) {}
+      throw new Error(`HTTP ${resp.status}${detail ? ': ' + detail : ''}`);
+    }
     flashSaved();
   } catch(e) {
     console.error('save failed', e);
-    indicator.textContent = 'Save failed!';
+    indicator.textContent = 'Save failed: ' + e.message;
+    indicator.title = e.message;
     indicator.style.color = 'var(--accent)';
   }
 }
@@ -3118,8 +3135,12 @@ async function loadState() {
   const indicator = document.getElementById('autosave-indicator');
   if (indicator) { indicator.textContent = 'Loading…'; indicator.style.color = 'var(--ink-3)'; }
   try {
-    const resp = await fetch('/data');
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const resp = await fetch('data');
+    if (!resp.ok) {
+      let detail = '';
+      try { detail = (await resp.json()).detail || ''; } catch(_) {}
+      throw new Error(`HTTP ${resp.status}${detail ? ': ' + detail : ''}`);
+    }
     const parsed = await resp.json();
     if (Array.isArray(parsed.datasets)) datasets = parsed.datasets;
     if (parsed.activeDatasetId) activeDatasetId = parsed.activeDatasetId;
@@ -3131,7 +3152,11 @@ async function loadState() {
     if (indicator) { indicator.textContent = 'Loaded'; indicator.style.color = 'var(--user)'; }
   } catch(e) {
     console.error('load failed', e);
-    if (indicator) { indicator.textContent = 'Load failed!'; indicator.style.color = 'var(--accent)'; }
+    if (indicator) {
+      indicator.textContent = 'Load failed: ' + e.message;
+      indicator.title = e.message;
+      indicator.style.color = 'var(--accent)';
+    }
   }
 }
 let saveTimer = null;

@@ -1717,6 +1717,276 @@
     color: var(--ink-2);
   }
 
+
+  /* === AUTH / LOGIN === */
+  .login-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    flex-direction: column;
+    gap: 0;
+  }
+  .login-box {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 40px 44px 36px;
+    width: 360px;
+  }
+  .login-brand {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .login-sub {
+    font-size: 12px;
+    color: var(--ink-3);
+    margin-bottom: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .login-field {
+    margin-bottom: 14px;
+  }
+  .login-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 5px;
+  }
+  .login-field input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 9px 11px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 13px;
+    outline: none;
+  }
+  .login-field input:focus { border-color: var(--ink-2); }
+  .login-error {
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    min-height: 18px;
+  }
+  .login-btn {
+    width: 100%;
+    padding: 10px;
+    background: #e8e4de;
+    border: 1px solid #b0aba3;
+    color: #111;
+    border-radius: 2px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 4px;
+  }
+  .login-btn:hover { background: #d8d3cc; }
+
+  /* === LOGGED-IN USER CHIP === */
+  .user-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    cursor: default;
+  }
+  .user-chip-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .user-chip-role {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-3);
+  }
+  .user-chip-logout {
+    font-size: 11px;
+    color: var(--ink-3);
+    cursor: pointer;
+    padding: 0 2px;
+    margin-left: 4px;
+  }
+  .user-chip-logout:hover { color: var(--accent); }
+
+  /* === ADMIN PANEL === */
+  .admin-view {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 150;
+    background: var(--bg);
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .admin-view.visible { display: flex; }
+  .admin-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px 80px;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .admin-section {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    margin-bottom: 28px;
+  }
+  .admin-section-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--rule);
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .admin-table th {
+    text-align: left;
+    padding: 10px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-3);
+    border-bottom: 1px solid var(--rule-2);
+  }
+  .admin-table td {
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--rule-2);
+    vertical-align: middle;
+  }
+  .admin-table tr:last-child td { border-bottom: none; }
+  .admin-table tr:hover td { background: var(--bg); }
+  .admin-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    color: var(--ink-3);
+    margin: 2px 2px 2px 0;
+  }
+  .admin-tag.admin-role { background: #7a9b6a22; color: #7a9b6a; border-color: #7a9b6a44; }
+  .admin-form {
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .admin-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .admin-form-field label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-3);
+  }
+  .admin-form-field input {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 6px 8px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
+    outline: none;
+  }
+  .admin-form-field input:focus { border-color: var(--ink-2); }
+  .admin-form-actions { grid-column: 1 / -1; display: flex; gap: 8px; }
+  .admin-dataset-checkboxes {
+    padding: 12px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .admin-ds-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .admin-ds-check input { cursor: pointer; }
+  .admin-inline-input {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    padding: 4px 7px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 12px;
+    outline: none;
+    width: 130px;
+  }
+
+
+  .export-format-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    background: var(--bg);
+    color: var(--ink-2);
+    transition: all 0.1s ease;
+    user-select: none;
+  }
+  .export-format-pill:hover { border-color: var(--ink-3); color: var(--ink); }
+  .export-format-pill.active {
+    background: #e8e4de;
+    border-color: #b0aba3;
+    color: #111;
+    font-weight: 600;
+  }
+
   /* === LAUNCHER === */
   .launcher {
     display: none;
@@ -2224,12 +2494,12 @@
     <div class="brand">OneSpan - Span Labeling Tool<span class="dataset-context" id="dataset-context"></span></div>
     <div class="header-meta" id="header-meta" style="color: var(--accent); font-weight: 600;">private workspace</div>
     <div class="header-actions">
-      <div class="user-picker" id="user-picker">
-        <span class="user-label">Annotator</span>
-        <span class="user-id" id="current-user-id">—</span>
-        <span class="chevron">▾</span>
-        <div class="user-menu" id="user-menu"></div>
+      <div class="user-chip" id="user-chip" style="display:none;">
+        <span class="user-chip-id" id="chip-annotator-id">—</span>
+        <span class="user-chip-role" id="chip-role"></span>
+        <span class="user-chip-logout" id="btn-logout" title="Sign out">⏻</span>
       </div>
+      <button class="btn" id="btn-admin" style="display:none;">Admin</button>
       <button class="btn" id="btn-import">Import</button>
       <button class="btn" id="btn-export">Export</button>
       <button class="btn primary" id="btn-categories">Manage Labels</button>
@@ -2376,28 +2646,45 @@
 
 <!-- Export modal -->
 <div class="modal-overlay" id="modal-export">
-  <div class="modal">
+  <div class="modal" style="width:680px; max-width:95vw;">
     <div class="modal-head">
       <div class="modal-title">Export Annotations</div>
       <button class="icon-btn" id="modal-export-close">✕</button>
     </div>
     <div class="modal-body">
-      <div class="help-text">Export conversations with span annotations.</div>
-      <div style="margin-bottom: 12px; display: flex; gap: 16px; padding: 10px 12px; background: var(--bg); border-radius: 3px; font-size: 13px;">
-        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-          <input type="radio" name="export-scope" value="mine" checked>
-          <span>Just my spans <span id="export-mine-id" style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent);"></span></span>
-        </label>
-        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-          <input type="radio" name="export-scope" value="all">
-          <span>All annotators (full data)</span>
-        </label>
+      <div style="display:flex; gap:24px; margin-bottom:14px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-3); margin-bottom:6px;">Format</div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;" id="export-format-group">
+            <label class="export-format-pill active" data-fmt="json"><input type="radio" name="export-format" value="json" checked hidden> OneSpan JSON</label>
+            <label class="export-format-pill" data-fmt="jsonl"><input type="radio" name="export-format" value="jsonl" hidden> HuggingFace JSONL</label>
+            <label class="export-format-pill" data-fmt="conll"><input type="radio" name="export-format" value="conll" hidden> CoNLL-2003</label>
+            <label class="export-format-pill" data-fmt="bio"><input type="radio" name="export-format" value="bio" hidden> BIO tagging</label>
+            <label class="export-format-pill" data-fmt="bioes"><input type="radio" name="export-format" value="bioes" hidden> BIOES tagging</label>
+            <label class="export-format-pill" data-fmt="spacy"><input type="radio" name="export-format" value="spacy" hidden> spaCy (.json)</label>
+            <label class="export-format-pill" data-fmt="csv"><input type="radio" name="export-format" value="csv" hidden> CSV</label>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--ink-3); margin-bottom:6px;">Annotator scope</div>
+          <div style="display:flex; gap:12px; font-size:13px;">
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="radio" name="export-scope" value="mine" checked>
+              <span>My spans <span id="export-mine-id" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent);"></span></span>
+            </label>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+              <input type="radio" name="export-scope" value="all">
+              <span>All annotators</span>
+            </label>
+          </div>
+        </div>
       </div>
-      <textarea id="export-text" readonly></textarea>
+      <div id="export-format-hint" style="font-size:11px; color:var(--ink-3); margin-bottom:8px; font-family:'JetBrains Mono',monospace;"></div>
+      <textarea id="export-text" readonly style="min-height:260px; font-size:11px;"></textarea>
     </div>
     <div class="modal-foot">
       <button class="btn" id="btn-copy-export">Copy</button>
-      <button class="btn primary" id="btn-download-export">Download .json</button>
+      <button class="btn primary" id="btn-download-export">Download</button>
     </div>
   </div>
 </div>
@@ -2444,6 +2731,38 @@
       <button class="btn" id="modal-dataset-edit-done">Save</button>
     </div>
   </div>
+</div>
+
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-brand">OneSpan</div>
+    <div class="login-sub">Span Labeling Tool</div>
+    <div class="login-field">
+      <label>Username</label>
+      <input type="text" id="login-username" autocomplete="username" autocapitalize="none">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="login-password" autocomplete="current-password">
+    </div>
+    <div class="login-error" id="login-error"></div>
+    <button class="login-btn" id="login-btn">Sign in</button>
+    <div style="margin-top:18px; font-size:11px; color:var(--ink-3); text-align:center; line-height:1.6;">Having trouble signing in?<br>Contact <span style="color:var(--ink-2); font-weight:600;">Adam Wylan</span> for access.</div>
+  </div>
+</div>
+
+<!-- ============ ADMIN PANEL ============ -->
+<div class="admin-view" id="admin-view">
+  <header>
+    <button class="back-to-launcher" id="btn-admin-close">
+      <span class="arrow">‹</span> Back
+    </button>
+    <div class="brand">OneSpan — Admin Panel</div>
+    <div class="header-actions"></div>
+  </header>
+  <div class="admin-body" id="admin-body"></div>
 </div>
 
 <script>
@@ -3075,6 +3394,60 @@ function duplicateDataset(id) {
 
 // ============== PERSISTENCE ==============
 // ============== SERVER PERSISTENCE ==============
+// Session-cookie auth: login POSTs credentials, server sets httponly cookie.
+// All subsequent requests carry the cookie automatically.
+
+// Compute the base URL once at startup.
+// When accessed via JupyterLab proxy the page URL is:
+//   https://host/user/name/proxy/8765/
+// fetch(_url('auth/login')) would resolve to /user/name/proxy/auth/login (wrong).
+// We need it to resolve to /user/name/proxy/8765/auth/login (right).
+// So we derive the base from window.location.href, keeping the trailing slash.
+const _API_BASE = (function() {
+  const href = window.location.href;
+  // Strip any hash/query, ensure trailing slash
+  const clean = href.split('?')[0].split('#')[0];
+  return clean.endsWith('/') ? clean : clean + '/';
+})();
+
+function _url(path) {
+  return _API_BASE + path;
+}
+
+function _fetchHeaders() {
+  return { 'Content-Type': 'application/json' };
+  // Session cookie is sent automatically by the browser
+}
+
+// Current logged-in user (set after login / me check)
+let currentUser = null;  // { username, role, annotatorId }
+
+async function doLogin(username, password) {
+  const resp = await fetch(_url('auth/login'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ username, password })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.detail || 'Login failed');
+  }
+  return resp.json();
+}
+
+async function doLogout() {
+  await fetch(_url('auth/logout'), { method: 'POST', credentials: 'include' });
+  currentUser = null;
+  showLoginScreen();
+}
+
+async function fetchMe() {
+  const resp = await fetch(_url('auth/me'), { credentials: 'include' });
+  if (!resp.ok) return null;
+  return resp.json();
+}
+
 // All state is stored server-side in dataset.json.
 // saveState() POSTs the full registry; loadState() GETs it on startup.
 //
@@ -3112,9 +3485,10 @@ async function _flushSave() {
   indicator.style.color = 'var(--ink-3)';
 
   try {
-    const resp = await fetch('data', {
+    const resp = await fetch(_url('data'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: _fetchHeaders(),
+      credentials: 'include',
       body: JSON.stringify({ datasets, activeDatasetId })
     });
     if (!resp.ok) {
@@ -3135,7 +3509,7 @@ async function loadState() {
   const indicator = document.getElementById('autosave-indicator');
   if (indicator) { indicator.textContent = 'Loading…'; indicator.style.color = 'var(--ink-3)'; }
   try {
-    const resp = await fetch('data');
+    const resp = await fetch(_url('data'), { headers: _fetchHeaders(), credentials: 'include' });
     if (!resp.ok) {
       let detail = '';
       try { detail = (await resp.json()).detail || ''; } catch(_) {}
@@ -3773,26 +4147,164 @@ function openExport() {
   document.getElementById('modal-export').classList.add('visible');
   refreshExport();
 }
-function refreshExport() {
-  const scope = document.querySelector('input[name="export-scope"]:checked')?.value || 'mine';
-  const data = {
+// ============== EXPORT FORMATS ==============
+const EXPORT_HINTS = {
+  json:  'Full annotated dataset. Preserves all spans, comments, relations, and guidelines.',
+  jsonl: 'One JSON object per conversation. Compatible with HuggingFace datasets.load_dataset().',
+  conll: 'CoNLL-2003 token-per-line format. Whitespace-tokenised. Suitable for NER training.',
+  bio:   'BIO tagging (B-LABEL, I-LABEL, O). One token per line, blank lines between conversations.',
+  bioes: 'BIOES tagging (B/I/O/E/S). Adds End and Singleton tags for boundary-aware models.',
+  spacy: 'spaCy v3 .json training format with doc/token/span structure.',
+  csv:   'Flat CSV: one span per row with conversation ID, turn, text, label, start, end.',
+};
+const EXPORT_EXTS = {
+  json:'json', jsonl:'jsonl', conll:'conll', bio:'bio', bioes:'bio', spacy:'json', csv:'csv'
+};
+
+function _getExportConvs(scope) {
+  return state.conversations.map(c => {
+    const allSpans = state.spans[c.id] || [];
+    const spans = scope === 'mine' ? allSpans.filter(s => s.annotator === state.currentUserId) : allSpans;
+    const allCm = state.comments ? (state.comments[c.id] || []) : [];
+    const comments = scope === 'mine' ? allCm.filter(cm => cm.annotator === state.currentUserId) : allCm;
+    return { ...c, spans, comments };
+  });
+}
+
+function _spanLabel(span) {
+  const lbl = findLabel(span.categoryId, span.labelId);
+  return lbl ? lbl.name.toUpperCase().replace(/\s+/g, '_') : 'SPAN';
+}
+
+function _tokenize(text) {
+  const tokens = []; let i = 0;
+  while (i < text.length) {
+    if (text[i] === ' ' || text[i] === '\t' || text[i] === '\r' || text[i] === '\n') { i++; continue; }
+    let j = i;
+    while (j < text.length && text[j] !== ' ' && text[j] !== '\t' && text[j] !== '\r' && text[j] !== '\n') j++;
+    tokens.push({ text: text.slice(i, j), start: i, end: j });
+    i = j;
+  }
+  return tokens;
+}
+
+function _bioTags(tokens, spans, scheme) {
+  const tags = tokens.map(() => 'O');
+  [...spans].sort((a, b) => a.start - b.start).forEach(span => {
+    const lbl = _spanLabel(span);
+    const inside = tokens.map((t, i) => ({ t, i })).filter(({ t }) => t.start >= span.start && t.end <= span.end);
+    inside.forEach(({ i }, idx) => {
+      if (scheme === 'bioes') {
+        if (inside.length === 1) tags[i] = 'S-' + lbl;
+        else if (idx === 0) tags[i] = 'B-' + lbl;
+        else if (idx === inside.length - 1) tags[i] = 'E-' + lbl;
+        else tags[i] = 'I-' + lbl;
+      } else {
+        tags[i] = idx === 0 ? 'B-' + lbl : 'I-' + lbl;
+      }
+    });
+  });
+  return tags;
+}
+
+function formatAsJSON(scope) {
+  return JSON.stringify({
     categories: state.categories,
     exportScope: scope,
     exportedBy: state.currentUserId,
     exportedAt: new Date().toISOString(),
-    conversations: state.conversations.map(c => {
-      const all = state.spans[c.id] || [];
-      const spans = scope === 'mine'
-        ? all.filter(s => s.annotator === state.currentUserId)
-        : all;
-      const allComments = state.comments ? (state.comments[c.id] || []) : [];
-      const comments = scope === 'mine'
-        ? allComments.filter(cm => cm.annotator === state.currentUserId)
-        : allComments;
-      return { ...c, spans, comments };
+    conversations: _getExportConvs(scope)
+  }, null, 2);
+}
+
+function formatAsJSONL(scope) {
+  return _getExportConvs(scope).map(c => JSON.stringify({
+    id: c.id, turns: c.turns,
+    spans: c.spans.map(s => ({ turn: s.turnIdx, text: s.text, label: _spanLabel(s), start: s.start, end: s.end, annotator: s.annotator })),
+    metadata: c.metadata || {}
+  })).join('\u000a');
+}
+
+function formatAsBIO(scope, scheme) {
+  const NL = '\u000a';
+  const out = [];
+  _getExportConvs(scope).forEach(c => {
+    out.push('# conv_id: ' + c.id);
+    c.turns.forEach((turn, ti) => {
+      out.push('# turn: ' + ti + ' role: ' + turn.role);
+      const tokens = _tokenize(turn.text);
+      const tags = _bioTags(tokens, c.spans.filter(s => s.turnIdx === ti), scheme);
+      tokens.forEach((tok, i) => out.push(tok.text + '\u0009' + tags[i]));
+      out.push('');
+    });
+    out.push('');
+  });
+  return out.join(NL);
+}
+
+function formatAsCoNLL(scope) {
+  const NL = '\u000a';
+  const out = [];
+  _getExportConvs(scope).forEach(c => {
+    out.push('-DOCSTART- -X- -X- O'); out.push('');
+    c.turns.forEach((turn, ti) => {
+      const tokens = _tokenize(turn.text);
+      const tags = _bioTags(tokens, c.spans.filter(s => s.turnIdx === ti), 'bio');
+      tokens.forEach((tok, i) => out.push(tok.text + ' NN NN ' + tags[i]));
+      out.push('');
+    });
+  });
+  return out.join(NL);
+}
+
+function formatAsSpacy(scope) {
+  const docs = _getExportConvs(scope).flatMap(c =>
+    c.turns.map((turn, ti) => {
+      const tokens = _tokenize(turn.text);
+      const tags = _bioTags(tokens, c.spans.filter(s => s.turnIdx === ti), 'bio');
+      return {
+        id: c.id + '_turn' + ti,
+        paragraphs: [{ sentences: [{ tokens: tokens.map((tok, i) => ({
+          id: i, orth: tok.text, tag: tags[i], head: i, dep: 'ROOT', ner: tags[i]
+        })) }] }]
+      };
     })
-  };
-  document.getElementById('export-text').value = JSON.stringify(data, null, 2);
+  );
+  return JSON.stringify(docs, null, 2);
+}
+
+function formatAsCSV(scope) {
+  const esc = v => '"' + String(v || '').replace(/"/g, '""') + '"';
+  const rows = ['conv_id,turn_idx,turn_role,span_text,label,category,start,end,annotator'];
+  _getExportConvs(scope).forEach(c => {
+    c.spans.forEach(s => {
+      const turn = c.turns[s.turnIdx] || {};
+      const lbl  = findLabel(s.categoryId, s.labelId);
+      const cat  = state.categories.find(ct => ct.id === s.categoryId);
+      rows.push([esc(c.id), s.turnIdx, esc(turn.role||''), esc(s.text),
+                 esc(lbl ? lbl.name : s.labelId), esc(cat ? cat.name : s.categoryId),
+                 s.start, s.end, esc(s.annotator)].join(','));
+    });
+  });
+  return rows.join('\u000a');
+}
+
+function refreshExport() {
+  const scope = document.querySelector('input[name="export-scope"]:checked')?.value || 'mine';
+  const fmt   = document.querySelector('input[name="export-format"]:checked')?.value || 'json';
+  document.getElementById('export-format-hint').textContent = EXPORT_HINTS[fmt] || '';
+  let output = '';
+  try {
+    if      (fmt === 'json')   output = formatAsJSON(scope);
+    else if (fmt === 'jsonl')  output = formatAsJSONL(scope);
+    else if (fmt === 'conll')  output = formatAsCoNLL(scope);
+    else if (fmt === 'bio')    output = formatAsBIO(scope, 'bio');
+    else if (fmt === 'bioes')  output = formatAsBIO(scope, 'bioes');
+    else if (fmt === 'spacy')  output = formatAsSpacy(scope);
+    else if (fmt === 'csv')    output = formatAsCSV(scope);
+  } catch(e) { output = 'Export error: ' + e.message; console.error(e); }
+  document.getElementById('export-text').value = output;
+  document.getElementById('btn-download-export').textContent = 'Download .' + (EXPORT_EXTS[fmt] || 'txt');
 }
 
 // 'current' = replace active dataset's data; 'new' = create new dataset
@@ -3853,86 +4365,7 @@ function doImport(jsonStr) {
 }
 
 // ============== RENDER: USER PICKER ==============
-function renderUserPicker() {
-  document.getElementById('current-user-id').textContent = state.currentUserId || '—';
-  const menu = document.getElementById('user-menu');
-  menu.innerHTML = '';
-  state.users.forEach(u => {
-    const item = document.createElement('div');
-    item.className = 'user-menu-item' + (u === state.currentUserId ? ' current' : '');
-    item.innerHTML = `
-      <span class="check">${u === state.currentUserId ? '✓' : ''}</span>
-      <span class="user-menu-id">${escapeHtml(u)}</span>
-      ${state.users.length > 1 ? `<span class="remove-user" title="Remove annotator">×</span>` : ''}
-    `;
-    item.addEventListener('click', (e) => {
-      if (e.target.classList.contains('remove-user')) {
-        e.stopPropagation();
-        if (!confirm(`Remove annotator ${u} from the picker? Their existing spans are preserved in the data but won't be visible to anyone until you re-add the ID.`)) return;
-        const wasCurrent = state.currentUserId === u;
-        state.users = state.users.filter(x => x !== u);
-        if (wasCurrent) state.currentUserId = state.users[0];
-        saveState();
-        if (wasCurrent) {
-          renderAll();
-        } else {
-          renderUserPicker();
-        }
-        return;
-      }
-      state.currentUserId = u;
-      saveState();
-      document.getElementById('user-menu').classList.remove('visible');
-      renderAll();
-    });
-    menu.appendChild(item);
-  });
-
-  const hint = document.createElement('div');
-  hint.className = 'user-menu-hint';
-  hint.textContent = 'Add annotator';
-  menu.appendChild(hint);
-
-  const adder = document.createElement('div');
-  adder.className = 'user-menu-divider';
-  adder.innerHTML = `
-    <input type="text" id="new-user-input" maxlength="8" placeholder="abc12345" pattern="[a-z]{3}[0-9]{5}">
-    <button id="add-user-generate" title="Generate random ID">↻</button>
-    <button id="add-user-confirm">Add</button>
-  `;
-  menu.appendChild(adder);
-
-  adder.addEventListener('click', (e) => e.stopPropagation());
-  const input = document.getElementById('new-user-input');
-  document.getElementById('add-user-generate').addEventListener('click', () => {
-    input.value = generateUserId();
-    input.focus();
-  });
-  const addUser = () => {
-    const v = input.value.trim().toLowerCase();
-    if (!isValidUserId(v)) {
-      input.style.borderColor = 'var(--accent)';
-      input.placeholder = 'format: abc12345';
-      return;
-    }
-    if (state.users.includes(v)) {
-      state.currentUserId = v;
-    } else {
-      state.users.push(v);
-      state.currentUserId = v;
-    }
-    input.value = '';
-    saveState();
-    renderAll();
-  };
-  document.getElementById('add-user-confirm').addEventListener('click', addUser);
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') addUser();
-  });
-  input.addEventListener('input', () => {
-    input.style.borderColor = '';
-  });
-}
+// renderUserPicker removed — auth handles identity
 
 
 // ============== LAUNCHER ==============
@@ -4005,7 +4438,7 @@ function renderLauncher() {
         </div>
       </div>
       <div class="dataset-card-actions">
-        <button class="btn-metrics" data-action="metrics">§ Metrics</button>
+        <button class="btn-metrics" data-action="metrics" ${currentUser && currentUser.role !== 'admin' ? 'style="display:none;"' : ''}>§ Metrics</button>
         <button class="btn-open" data-action="open">Open →</button>
       </div>
     `;
@@ -5031,6 +5464,10 @@ function patchSectionHead(sectionEl, defKey) {
 
 // ---- open / close ----
 function openMetricsForDataset(id) {
+  if (!currentUser || currentUser.role !== 'admin') {
+    alert('Metrics are only available to admins.');
+    return;
+  }
   // Set the active dataset for rendering without entering the labeler view
   setActiveDataset(id);
   document.getElementById('metrics-view').classList.add('visible');
@@ -5047,7 +5484,6 @@ function closeMetrics() {
 // ============== RENDER ALL ==============
 function renderAll() {
   buildHotkeyMap();
-  renderUserPicker();
   renderQueue();
   renderConversation();
   renderSpansList();
@@ -5116,12 +5552,6 @@ document.getElementById('btn-complete').addEventListener('click', () => {
 });
 
 // User picker open/close
-document.getElementById('user-picker').addEventListener('click', (e) => {
-  const menu = document.getElementById('user-menu');
-  // Don't toggle if click came from inside the menu
-  if (e.target.closest('#user-menu')) return;
-  menu.classList.toggle('visible');
-});
 document.addEventListener('click', (e) => {
   if (!e.target.closest('#user-picker')) {
     document.getElementById('user-menu').classList.remove('visible');
@@ -5174,14 +5604,26 @@ document.getElementById('btn-copy-export').addEventListener('click', () => {
   });
 });
 document.getElementById('btn-download-export').addEventListener('click', () => {
-  const ta = document.getElementById('export-text');
-  const blob = new Blob([ta.value], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `annotations-${new Date().toISOString().slice(0,10)}.json`;
+  const fmt  = document.querySelector('input[name="export-format"]:checked')?.value || 'json';
+  const ext  = EXPORT_EXTS[fmt] || 'txt';
+  const mime = fmt === 'csv' ? 'text/csv' : fmt.includes('json') ? 'application/json' : 'text/plain';
+  const ta   = document.getElementById('export-text');
+  const blob = new Blob([ta.value], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'annotations-' + new Date().toISOString().slice(0,10) + '.' + ext;
   a.click();
   URL.revokeObjectURL(url);
+});
+
+document.getElementById('export-format-group').addEventListener('click', e => {
+  const pill = e.target.closest('.export-format-pill');
+  if (!pill) return;
+  document.querySelectorAll('.export-format-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  pill.querySelector('input').checked = true;
+  refreshExport();
 });
 
 document.getElementById('btn-categories').addEventListener('click', () => {
@@ -5304,11 +5746,55 @@ document.querySelectorAll('.tab').forEach(t => {
 });
 
 // ============== INIT ==============
-(async () => {
+
+function showLoginScreen() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  setTimeout(() => document.getElementById('login-username').focus(), 50);
+}
+
+function hideLoginScreen() {
+  document.getElementById('login-screen').style.display = 'none';
+}
+
+function updateUserChip() {
+  if (!currentUser) return;
+  const chip = document.getElementById('user-chip');
+  const adminBtn = document.getElementById('btn-admin');
+  chip.style.display = 'flex';
+  document.getElementById('chip-annotator-id').textContent = currentUser.annotatorId;
+  document.getElementById('chip-role').textContent = currentUser.role === 'admin' ? 'admin' : '';
+  if (currentUser.role === 'admin') {
+    adminBtn.style.display = '';
+  }
+}
+
+async function bootApp() {
+  // Check if already logged in
+  const me = await fetchMe();
+  if (me) {
+    currentUser = me;
+    hideLoginScreen();
+    updateUserChip();
+    await bootDatasets();
+  } else {
+    showLoginScreen();
+  }
+}
+
+async function bootDatasets() {
+  // Set currentUserId from the logged-in annotatorId
   await loadState();
 
-  // Seed a starter dataset on first visit so the launcher isn't empty.
-  if (datasets.length === 0) {
+  // Inject logged-in annotatorId as the annotator for all state ops
+  // No more user picker — the server-authenticated user is the annotator
+  if (state) {
+    state.currentUserId = currentUser.annotatorId;
+  }
+
+  if (datasets.length === 0 && currentUser.role === 'admin') {
     createDataset({
       name: 'Bank Bot — Sample Set',
       description: 'Four illustrative bank chatbot conversations covering balance checks, card issues, transfers, and fraud reports.',
@@ -5316,13 +5802,314 @@ document.querySelectorAll('.tab').forEach(t => {
     });
   }
 
-  // Resume the last-opened dataset, or land on the launcher.
   if (activeDatasetId && datasets.find(d => d.id === activeDatasetId)) {
     openDataset(activeDatasetId);
   } else {
     showLauncher();
   }
-})();
+}
+
+// Login form
+document.getElementById('login-btn').addEventListener('click', async () => {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errorEl  = document.getElementById('login-error');
+  const btn      = document.getElementById('login-btn');
+
+  if (!username || !password) {
+    errorEl.textContent = 'Please enter your username and password.';
+    return;
+  }
+
+  btn.textContent = 'Signing in…';
+  btn.disabled = true;
+  errorEl.textContent = '';
+
+  try {
+    const user = await doLogin(username, password);
+    currentUser = user;
+    hideLoginScreen();
+    updateUserChip();
+    await bootDatasets();
+  } catch(e) {
+    errorEl.textContent = e.message;
+  } finally {
+    btn.textContent = 'Sign in';
+    btn.disabled = false;
+  }
+});
+
+document.getElementById('login-password').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('login-btn').click();
+});
+
+document.getElementById('login-username').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('login-password').focus();
+});
+
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  if (confirm('Sign out?')) await doLogout();
+});
+
+// Admin panel
+document.getElementById('btn-admin').addEventListener('click', () => {
+  document.getElementById('admin-view').classList.add('visible');
+  renderAdminPanel();
+});
+
+document.getElementById('btn-admin-close').addEventListener('click', () => {
+  document.getElementById('admin-view').classList.remove('visible');
+});
+
+// ---- Admin panel renderer ----
+async function renderAdminPanel() {
+  const body = document.getElementById('admin-body');
+  body.innerHTML = '<div style="color:var(--ink-3); padding:20px;">Loading…</div>';
+
+  const [usersResp, dataResp] = await Promise.all([
+    fetch(_url('admin/users'), { credentials: 'include' }),
+    fetch(_url('data'), { credentials: 'include' })
+  ]);
+
+  if (!usersResp.ok) {
+    body.innerHTML = '<div style="color:var(--accent); padding:20px;">Failed to load users.</div>';
+    return;
+  }
+
+  const users   = await usersResp.json();
+  const data    = await dataResp.json();
+  const allDs   = data.datasets || [];
+
+  body.innerHTML = '';
+
+  // ---- User table ----
+  const sec1 = document.createElement('div');
+  sec1.className = 'admin-section';
+
+  let rows = users.map(u => {
+    const dsTags = u.datasets === '*'
+      ? '<span class="admin-tag">All datasets</span>'
+      : (Array.isArray(u.datasets) ? u.datasets : [])
+          .map(id => {
+            const ds = allDs.find(d => d.id === id);
+            return `<span class="admin-tag">${escapeHtml(ds ? ds.name : id)}</span>`;
+          }).join('') || '<span style="color:var(--ink-3); font-size:11px;">None</span>';
+
+    const roleTag = u.role === 'admin'
+      ? '<span class="admin-tag admin-role">admin</span>'
+      : '';
+
+    return `<tr data-username="${escapeHtml(u.username)}">
+      <td><code style="font-size:11px;">${escapeHtml(u.username)}</code>${roleTag}</td>
+      <td><code style="font-size:11px;">${escapeHtml(u.annotatorId)}</code></td>
+      <td>${dsTags}</td>
+      <td>
+        <button class="btn" style="font-size:11px; padding:3px 8px; margin-right:4px;"
+          onclick="adminEditDatasets('${escapeHtml(u.username)}')">Datasets</button>
+        <button class="btn" style="font-size:11px; padding:3px 8px; margin-right:4px;"
+          onclick="adminResetPwd('${escapeHtml(u.username)}')">Reset PW</button>
+        ${u.username !== 'admin' ? `<button class="btn danger" style="font-size:11px; padding:3px 8px;"
+          onclick="adminDeleteUser('${escapeHtml(u.username)}')">Delete</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  sec1.innerHTML = `
+    <div class="admin-section-head">
+      <span>Annotators (${users.length})</span>
+    </div>
+    <table class="admin-table">
+      <thead><tr>
+        <th>Username</th><th>Annotator ID</th><th>Dataset access</th><th>Actions</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+  body.appendChild(sec1);
+
+  // ---- Create user form ----
+  const sec2 = document.createElement('div');
+  sec2.className = 'admin-section';
+  sec2.innerHTML = `
+    <div class="admin-section-head"><span>Create annotator</span></div>
+    <div class="admin-form">
+      <div class="admin-form-field">
+        <label>Username (login name)</label>
+        <input type="text" id="new-username" placeholder="e.g. jsmith" autocapitalize="none">
+      </div>
+      <div class="admin-form-field">
+        <label>Annotator ID (shown in spans)</label>
+        <input type="text" id="new-annotator-id" placeholder="auto-generated if blank">
+      </div>
+      <div class="admin-form-field">
+        <label>Password (min 6 chars)</label>
+        <input type="password" id="new-password" placeholder="Temporary password">
+      </div>
+      <div class="admin-form-field">
+        <label>&nbsp;</label>
+        <div style="font-size:11px; color:var(--ink-3); padding-top:6px;">
+          Assign dataset access after creating the account.
+        </div>
+      </div>
+      <div class="admin-form-actions">
+        <button class="btn primary" id="btn-create-user">Create annotator</button>
+        <span id="create-user-msg" style="font-size:12px; align-self:center; color:var(--user);"></span>
+      </div>
+    </div>
+  `;
+  body.appendChild(sec2);
+
+  document.getElementById('btn-create-user').addEventListener('click', async () => {
+    const username     = document.getElementById('new-username').value.trim().toLowerCase();
+    const annotatorId  = document.getElementById('new-annotator-id').value.trim() || generateUserId();
+    const password     = document.getElementById('new-password').value;
+    const msg          = document.getElementById('create-user-msg');
+
+    if (!username || !password) { msg.textContent = 'Username and password required.'; msg.style.color = 'var(--accent)'; return; }
+
+    const resp = await fetch(_url('admin/users'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ username, password, annotatorId })
+    });
+
+    if (resp.ok) {
+      msg.textContent = `Created ${username}`;
+      msg.style.color = 'var(--user)';
+      document.getElementById('new-username').value = '';
+      document.getElementById('new-annotator-id').value = '';
+      document.getElementById('new-password').value = '';
+      setTimeout(renderAdminPanel, 800);
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      msg.textContent = err.detail || 'Error creating user';
+      msg.style.color = 'var(--accent)';
+    }
+  });
+
+  // ---- Change admin password ----
+  const sec3 = document.createElement('div');
+  sec3.className = 'admin-section';
+  sec3.innerHTML = `
+    <div class="admin-section-head"><span>Change admin password</span></div>
+    <div class="admin-form">
+      <div class="admin-form-field">
+        <label>Current password</label>
+        <input type="password" id="admin-pw-current">
+      </div>
+      <div class="admin-form-field">
+        <label>New password (min 6 chars)</label>
+        <input type="password" id="admin-pw-new">
+      </div>
+      <div class="admin-form-actions">
+        <button class="btn primary" id="btn-change-admin-pw">Update password</button>
+        <span id="admin-pw-msg" style="font-size:12px; align-self:center;"></span>
+      </div>
+    </div>
+  `;
+  body.appendChild(sec3);
+
+  document.getElementById('btn-change-admin-pw').addEventListener('click', async () => {
+    const current = document.getElementById('admin-pw-current').value;
+    const newPw   = document.getElementById('admin-pw-new').value;
+    const msg     = document.getElementById('admin-pw-msg');
+    const resp = await fetch(_url('auth/change-password'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ current, new: newPw })
+    });
+    if (resp.ok) {
+      msg.textContent = 'Password updated.';
+      msg.style.color = 'var(--user)';
+      document.getElementById('admin-pw-current').value = '';
+      document.getElementById('admin-pw-new').value = '';
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      msg.textContent = err.detail || 'Error';
+      msg.style.color = 'var(--accent)';
+    }
+  });
+}
+
+window.adminDeleteUser = async function(username) {
+  if (!confirm(`Delete user "${username}"? This cannot be undone.`)) return;
+  const resp = await fetch(_url('admin/users/') + encodeURIComponent(username), {
+    method: 'DELETE', credentials: 'include'
+  });
+  if (resp.ok) renderAdminPanel();
+  else { const e = await resp.json().catch(()=>({})); alert(e.detail || 'Error deleting user'); }
+};
+
+window.adminResetPwd = async function(username) {
+  const pwd = prompt(`New password for "${username}" (min 6 chars):`);
+  if (!pwd) return;
+  const resp = await fetch(_url('admin/users/') + encodeURIComponent(username) + '/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ password: pwd })
+  });
+  if (resp.ok) alert('Password reset successfully.');
+  else { const e = await resp.json().catch(()=>({})); alert(e.detail || 'Error'); }
+};
+
+window.adminEditDatasets = async function(username) {
+  const [dataResp] = await Promise.all([
+    fetch(_url('data'), { credentials: 'include' })
+  ]);
+  const data   = await dataResp.json();
+  const allDs  = data.datasets || [];
+
+  const usersResp = await fetch(_url('admin/users'), { credentials: 'include' });
+  const users = await usersResp.json();
+  const user = users.find(u => u.username === username);
+  const currentAccess = Array.isArray(user?.datasets) ? user.datasets : [];
+
+  // Build a modal-style overlay for dataset assignment
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:600;display:flex;align-items:center;justify-content:center;';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:28px 32px;width:440px;max-width:90vw;';
+  box.innerHTML = `
+    <div style="font-family:'Fraunces',serif;font-size:15px;font-weight:600;margin-bottom:16px;">
+      Dataset access for <code>${escapeHtml(username)}</code>
+    </div>
+    <div style="margin-bottom:16px;">
+      ${allDs.length === 0
+        ? '<div style="color:var(--ink-3);font-size:12px;">No datasets exist yet.</div>'
+        : allDs.map(ds => `
+          <label class="admin-ds-check">
+            <input type="checkbox" value="${ds.id}" ${currentAccess.includes(ds.id) ? 'checked' : ''}>
+            <span>${escapeHtml(ds.name)}</span>
+          </label>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="btn" id="ds-cancel">Cancel</button>
+      <button class="btn primary" id="ds-save">Save</button>
+    </div>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  overlay.querySelector('#ds-cancel').addEventListener('click', () => overlay.remove());
+  overlay.querySelector('#ds-save').addEventListener('click', async () => {
+    const selected = Array.from(box.querySelectorAll('input[type=checkbox]:checked')).map(c => c.value);
+    const resp = await fetch(_url('admin/users/') + encodeURIComponent(username) + '/datasets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ datasets: selected })
+    });
+    overlay.remove();
+    if (resp.ok) renderAdminPanel();
+    else { const e = await resp.json().catch(()=>({})); alert(e.detail || 'Error saving datasets'); }
+  });
+};
+
+// Boot
+bootApp();
 </script>
 </body>
 </html>

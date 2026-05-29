@@ -35,6 +35,8 @@ PORT          = int(os.environ.get("PORT", 8765))
 DATA_FILE     = Path(os.environ.get("DATA_FILE",     "dataset.json"))
 USERS_FILE    = Path(os.environ.get("USERS_FILE",    "users.json"))
 SESSIONS_FILE = Path(os.environ.get("SESSIONS_FILE", "sessions.json"))
+TRACKING_FILE = Path(os.environ.get("TRACKING_FILE", "tracking.json"))
+SETTINGS_FILE = Path(os.environ.get("SETTINGS_FILE", "settings.json"))
 HTML_FILE     = Path(os.environ.get("HTML_FILE",     "index.html"))
 ADMIN_PASSWORD= os.environ.get("ADMIN_PASSWORD", "spann3r$")
 
@@ -203,6 +205,8 @@ async def lifespan(app: FastAPI):
         (DATA_FILE,     {"datasets": [], "activeDatasetId": None}),
         (USERS_FILE,    {}),
         (SESSIONS_FILE, {}),
+        (TRACKING_FILE, {"records": []}),
+        (SETTINGS_FILE, {"idleThresholdMinutes": 4}),
     ]:
         if not path.exists():
             _write_json(path, default)
@@ -458,6 +462,97 @@ async def save_data(request: Request):
 # ---------------------------------------------------------------------------
 # Health
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Time tracking
+# ---------------------------------------------------------------------------
+@app.post("/tracking")
+@app.post("/tracking/")
+async def post_tracking(request: Request):
+    """Record a heartbeat of active annotation time."""
+    session = _require_session(request)
+    body = await _parse_body(request)
+
+    annotator = session["username"]
+    users = _load_users()
+    annotator_id = users.get(annotator, {}).get("annotatorId", annotator)
+
+    dataset_id = body.get("datasetId")
+    date       = body.get("date")
+    add_sec    = int(body.get("activeSeconds", 0))
+    add_evt    = int(body.get("events", 0))
+    add_spans  = int(body.get("spansCreated", 0))
+
+    if not dataset_id or not date:
+        raise HTTPException(status_code=400, detail="datasetId and date required")
+
+    async with _file_lock:
+        tracking = _read_json(TRACKING_FILE, {"records": []})
+        records = tracking.get("records", [])
+        match = None
+        for r in records:
+            if (r["annotatorId"] == annotator_id and
+                r["datasetId"] == dataset_id and
+                r["date"] == date):
+                match = r
+                break
+        if match:
+            match["activeSeconds"] += add_sec
+            match["events"]        += add_evt
+            match["spansCreated"]  += add_spans
+        else:
+            records.append({
+                "annotatorId":   annotator_id,
+                "datasetId":     dataset_id,
+                "date":          date,
+                "activeSeconds": add_sec,
+                "events":        add_evt,
+                "spansCreated":  add_spans,
+            })
+        tracking["records"] = records
+        _write_json(TRACKING_FILE, tracking)
+
+    return {"ok": True}
+
+
+@app.get("/tracking")
+@app.get("/tracking/")
+async def get_tracking(request: Request):
+    """Admin-only: return all time-tracking records."""
+    _require_admin(request)
+    return _read_json(TRACKING_FILE, {"records": []})
+
+
+# ---------------------------------------------------------------------------
+# Settings
+# ---------------------------------------------------------------------------
+@app.get("/settings")
+@app.get("/settings/")
+async def get_settings(request: Request):
+    """Any logged-in user can read settings (needed for idle threshold)."""
+    _require_session(request)
+    return _read_json(SETTINGS_FILE, {"idleThresholdMinutes": 4})
+
+
+@app.post("/settings")
+@app.post("/settings/")
+async def post_settings(request: Request):
+    """Admin-only: update settings."""
+    _require_admin(request)
+    body = await _parse_body(request)
+    settings = _read_json(SETTINGS_FILE, {"idleThresholdMinutes": 4})
+    if "idleThresholdMinutes" in body:
+        try:
+            v = float(body["idleThresholdMinutes"])
+            if v < 0.5 or v > 60:
+                raise ValueError()
+            settings["idleThresholdMinutes"] = v
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="idleThresholdMinutes must be 0.5-60")
+    async with _file_lock:
+        _write_json(SETTINGS_FILE, settings)
+    return {"ok": True, "settings": settings}
+
+
 @app.get("/health")
 async def health():
     return {
